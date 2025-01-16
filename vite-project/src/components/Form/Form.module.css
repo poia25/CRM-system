@@ -1,0 +1,23 @@
+.form {
+  width: 80%;
+  margin: 0 auto;
+  margin: 10px 0;
+  width: 100%;
+}
+.input {
+  outline: none;
+  border: #ccc;
+  padding: 10px;
+  border-bottom: 1.5px solid #adadad;
+  background-color: #f1f4f9;
+  width: 60%;
+}
+.button {
+  background-color: #4285f4;
+  padding: 10px 50px;
+  border: #5393ff;
+  margin-left: 5px;
+  border-radius: 5px;
+  color: white;
+  float: right;
+}
