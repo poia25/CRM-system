@@ -1,0 +1,14 @@
+.tabs {
+  display: flex;
+  justify-content: space-around;
+    margin-bottom: 20px;
+    align-items: center;
+}
+
+.button {
+  background-color: #f1f4f9;
+  border: #ccc;
+  margin: 0 3px;
+  cursor: pointer;
+  font-size: 18px;
+}
