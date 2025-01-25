@@ -1,6 +1,7 @@
 import { TodoStatus } from "../../types/todo.ts";
 import { TodoInfo } from "../../types/todo.ts";
-import styles from "./Tabs.module.css";
+// import styles from "./Tabs.module.css";
+import { Button, Space } from "antd";
 
 interface ButtonProps {
   setActiveTab: (tab: TodoStatus) => void;
@@ -14,42 +15,28 @@ const ButtonAll: React.FC<ButtonProps> = ({
   info,
 }) => {
   return (
-    <div>
-      <button
-        className={styles.button}
+    <Space>
+      <Button
         onClick={() => setActiveTab(TodoStatus.All)}
-        style={{
-          fontWeight: activeTab === "all" ? "bold" : "normal",
-          color: activeTab === "all" ? "#1b8bd6" : "#727272",
-          borderBottom: activeTab === "all" ? "2px solid #1b8bd6" : "none",
-        }}
+        type={activeTab === TodoStatus.All ? "primary" : "default"}
       >
-        Все<span>({info.all})</span>
-      </button>
-      <button
-        className={styles.button}
+        Все({info.all})
+      </Button>
+
+      <Button
         onClick={() => setActiveTab(TodoStatus.Completed)}
-        style={{
-          fontWeight: activeTab === "completed" ? "bold" : "normal",
-          color: activeTab === "completed" ? "#1b8bd6" : "#727272",
-          borderBottom:
-            activeTab === "completed" ? "2px solid #1b8bd6" : "none",
-        }}
+        type={activeTab === TodoStatus.Completed ? "primary" : "default"}
       >
-        в работе<span>({info.inWork})</span>
-      </button>
-      <button
-        className={styles.button}
+        в работе({info.inWork})
+      </Button>
+
+      <Button
         onClick={() => setActiveTab(TodoStatus.Pending)}
-        style={{
-          fontWeight: activeTab === "pending" ? "bold" : "normal",
-          color: activeTab === "pending" ? "#1b8bd6" : "#727272",
-          borderBottom: activeTab === "pending" ? "2px solid #1b8bd6" : "none",
-        }}
+        type={activeTab === TodoStatus.Pending ? "primary" : "default"}
       >
-        сделано<span>({info.completed})</span>
-      </button>
-    </div>
+        сделано({info.completed})
+      </Button>
+    </Space>
   );
 };
 

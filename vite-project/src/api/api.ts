@@ -1,103 +1,60 @@
-import { TodoStatus,TodoRequest } from "../types/todo.ts";
+import { TodoStatus, TodoRequest } from "../types/todo.ts";
+import axios from "axios";
+
+const url = "https://easydev.club/api/v1/todos";
 
 export async function Fetch() {
-  const response = await fetch("https://easydev.club/api/v1/todos");
-  if (!response.ok) {
-    throw new Error("Failed to fetch tasks");
-  }
-  return response.json();
+  const response = await axios.get(url);
+  return response.data;
 }
 
-export async function addTask(task:TodoRequest) {
-  const response = await fetch("https://easydev.club/api/v1/todos", {
-    method: "POST",
-    body: JSON.stringify(task),
+export async function addTask(task: TodoRequest) {
+  const response = await axios.post(url, task, {
     headers: {
       "Content-Type": "application/json",
     },
   });
-  if (!response.ok) {
-    throw new Error("Failed to add task");
-  }
-  return response.json();
+  return response.data;
 }
 
 export const deleteTask = async (id: number) => {
-  const response = await fetch(`https://easydev.club/api/v1/todos/${id}`, {
-    method: "DELETE",
-  });
-  if (!response.ok) {
-    throw new Error("Failed to delete task");
-  }
-
-  let data = null;
-  if (response.headers.get("Content-Type")?.includes("application/json")) {
-    data = await response.json();
-  }
-
-  return data;
+  const response = await axios.delete(`${url}/${id}`);
+  return response.data;
 };
 
-export const EditingTask = async (id: number, isDone:boolean) => {
-  try {
-    const response = await fetch(`https://easydev.club/api/v1/todos/${id}`, {
-      method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          isDone: !isDone, // Меняем состояние на противоположное
-        }),
-    });
-    if (!response.ok) {
-      throw new Error("Ошибка при обновлении задачи");
-    }
-    const updatedTask = await response.json();
-    return updatedTask; 
-  }catch (error) {
-    console.error("Ошибка API:", error);
-    throw error;
-  }
-}
+export const EditingTask = async (id: number, isDone: boolean) => {
+  const payload = {
+    isDone: !isDone,
+  };
+  const response = await axios.put(`${url}/${id}`, payload, {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  return response.data;
+};
 
 export const fetchTodos = async (
   status: TodoStatus.All | TodoStatus.Completed | TodoStatus.Pending
 ) => {
-  const baseUrl = "https://easydev.club/api/v1/todos";
   const queryParam = status ? `?filter=${status}` : "";
-  const url = `${baseUrl}${queryParam}`;
-
-  try {
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-    if (!response.ok) {
-      throw new Error(`Ошибка: ${response.status}`);
-    }
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error("Ошибка при вызове API:", error);
-  }
+  const response = await axios.get(`${url}${queryParam}`, {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  return response.data;
 };
 
 export const updateTask = async (id: number, updatedData: TodoRequest) => {
-  try{
+  const payload = {
+    title: updatedData.title,
+  };
 
-    const response = await fetch(`https://easydev.club/api/v1/todos/${id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(updatedData),
-    });
-     return await response.json();
-  }catch{
-
-    throw new Error('Failed to update the task');
-  }
- 
-}
+  const response = await axios.put(`${url}/${id}`, payload, {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  return response.data;
+};

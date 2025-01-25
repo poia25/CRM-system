@@ -1,41 +1,43 @@
-import { useState } from "react";
 import { addTask } from "../../api/api";
 import { Todo } from "../../types/todo";
-import styles from "./Form.module.css";
+import { Button, Form, Input } from "antd";
 interface TodoFormProps {
   setData: React.Dispatch<React.SetStateAction<Todo[]>>;
   loadTodos: () => void;
 }
 
 const TodoForm: React.FC<TodoFormProps> = ({ setData, loadTodos }) => {
-  const [newTask, setNewTask] = useState<string>("");
+  const [form] = Form.useForm();
 
-  const handleAddTask = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newTask.length > 2 && newTask.length < 64) {
-      const NewTask = await addTask({ title: newTask, isDone: false });
-      setData((prevData) => [...prevData, NewTask]);
-      loadTodos();
-      setNewTask("");
-    }else{
-      alert('Некорректное количество символов')
-    }
+  const handleAddTask = async (values: { task: string }) => {
+    const NewTask = await addTask({ title: values.task, isDone: false });
+    setData((prevData) => [...prevData, NewTask]);
+    loadTodos();
+    form.resetFields();
   };
 
   return (
     <>
-      <form className={styles.form}>
-        <input
-          type="text"
-          value={newTask}
-          onChange={(e) => setNewTask(e.target.value)}
-          placeholder="Add a new task"
-          className={styles.input}
-        />
-        <button onClick={handleAddTask} className={styles.button}>
-          Add
-        </button>
-      </form>
+      <Form onFinish={handleAddTask} form={form}>
+        <div style={{ display: "flex", gap: "10px" }}>
+          <Form.Item
+            name="task"
+            rules={[
+              { required: true, message: "Input is required!" },
+              { min: 2, message: "Input must be at least 3 characters long!" },
+              { max: 64, message: "Input cannot exceed 64 characters!" },
+            ]}
+          >
+            <Input
+              placeholder="Add a new task"
+              style={{ width: "300px" }}
+            ></Input>
+          </Form.Item>
+          <Button htmlType="submit" type="primary" size="middle">
+            Add
+          </Button>
+        </div>
+      </Form>
     </>
   );
 };

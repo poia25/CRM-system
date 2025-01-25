@@ -3,6 +3,9 @@ import { faEdit, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { deleteTask, EditingTask } from "../../api/api";
 import { Todo } from "../../types/todo";
 import styles from "./List.module.css";
+import { Button, Checkbox, Space, Typography } from "antd";
+
+const { Text } = Typography;
 
 interface TaskProps {
   todo: {
@@ -52,40 +55,35 @@ const Task: React.FC<TaskProps> = ({
 
   return (
     <>
-      <div>
-        <input
-          type="checkbox"
+      <Space>
+        <Checkbox
           checked={todo.isDone}
           onChange={() => toogleTask(todo.id)}
           className={styles.input}
         />
-        <span
+        <Text
           style={{
             textDecoration: todo.isDone ? "line-through" : "none",
             color: todo.isDone ? "#a8a8a8" : "black",
           }}
         >
           {todo.title}
-        </span>
-      </div>
+        </Text>
+      </Space>
 
       <div className={styles.actions}>
-        <button
-          className={styles.edit}
+        <Button
+          type="primary"
           onClick={() => startEditing(todo.id, todo.title)}
         >
           <FontAwesomeIcon icon={faEdit} />
-        </button>
-        <button
-          className="btn"
-          onClick={() => handleDeleteTask(todo.id)}
-          style={{ backgroundColor: "red" }}
-        >
+        </Button>
+        <Button type="primary" danger onClick={() => handleDeleteTask(todo.id)}>
           <FontAwesomeIcon
             icon={faTrash}
             style={{ color: "white", height: "12px" }}
           />
-        </button>
+        </Button>
       </div>
     </>
   );

@@ -3,6 +3,7 @@ import { Todo } from "../../types/todo.ts";
 import Task from "./Task.tsx";
 import { updateTask } from "../../api/api.ts";
 import styles from "./List.module.css";
+import { Button, Form, Input, Space } from "antd";
 
 interface TodoListProps {
   todos: Todo[];
@@ -44,23 +45,39 @@ const TodoList: React.FC<TodoListProps> = ({ todos, setData, loadTodos }) => {
           <li key={todo.id} className={styles.taskItem}>
             {editId === todo.id ? (
               <>
-                <input
-                  className={styles.change}
-                  type="text"
-                  value={editTitle}
-                  onChange={(e) => setEditTitle(e.target.value)}
-                />
-                <div className={styles.actions_2}>
-                  <button onClick={closeEdeting} className={styles.btn1}>
-                    Отмена
-                  </button>
-                  <button
-                    className={styles.btn2}
-                    onClick={() => finishEditing(editId, editTitle)}
-                  >
-                    Сохранить
-                  </button>
-                </div>
+                <Form>
+                  <Space>
+                    <Form.Item
+                      name="input"
+                      rules={[
+                        { required: true, message: "Input is required!" },
+                        {
+                          min: 2,
+                          message: "Input must be at least 2 characters long!",
+                        },
+                        {
+                          max: 64,
+                          message: "Input cannot exceed 64 characters!",
+                        },
+                      ]}
+                      style={{ marginTop: "20px" }}
+                    >
+                      <Input
+                        defaultValue={editTitle}
+                        onChange={(e) => setEditTitle(e.target.value)}
+                      />
+                    </Form.Item>
+                    <Button onClick={closeEdeting} type="primary" danger>
+                      Отмена
+                    </Button>
+                    <Button
+                      onClick={() => finishEditing(editId, editTitle)}
+                      type="primary"
+                    >
+                      Сохранить
+                    </Button>
+                  </Space>
+                </Form>
               </>
             ) : (
               <>
