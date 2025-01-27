@@ -16,38 +16,28 @@ const ButtonAll: React.FC<ButtonProps> = ({
   return (
     <div>
       <button
-        className={styles.button}
+        className={`${(styles.tab, styles.button)} ${
+          activeTab === "all" ? styles.tabActive : ""
+        }`}
         onClick={() => setActiveTab(TodoStatus.All)}
-        style={{
-          fontWeight: activeTab === "all" ? "bold" : "normal",
-          color: activeTab === "all" ? "#1b8bd6" : "#727272",
-          borderBottom: activeTab === "all" ? "2px solid #1b8bd6" : "none",
-        }}
       >
-        Все<span>({info.all})</span>
+        Все({info.all})
       </button>
       <button
-        className={styles.button}
+        className={`${(styles.tab, styles.button)} ${
+          activeTab === "completed" ? styles.tabActive : ""
+        }`}
         onClick={() => setActiveTab(TodoStatus.Completed)}
-        style={{
-          fontWeight: activeTab === "completed" ? "bold" : "normal",
-          color: activeTab === "completed" ? "#1b8bd6" : "#727272",
-          borderBottom:
-            activeTab === "completed" ? "2px solid #1b8bd6" : "none",
-        }}
       >
-        в работе<span>({info.inWork})</span>
+        в работе({info.inWork})
       </button>
       <button
-        className={styles.button}
+        className={`${(styles.tab, styles.button)} ${
+          activeTab === "pending" ? styles.tabActive : ""
+        }`}
         onClick={() => setActiveTab(TodoStatus.Pending)}
-        style={{
-          fontWeight: activeTab === "pending" ? "bold" : "normal",
-          color: activeTab === "pending" ? "#1b8bd6" : "#727272",
-          borderBottom: activeTab === "pending" ? "2px solid #1b8bd6" : "none",
-        }}
       >
-        сделано<span>({info.completed})</span>
+        сделано({info.completed})
       </button>
     </div>
   );
