@@ -14,7 +14,7 @@ const Sidebar = () => {
         
       }}
     >
-      <Link to="/todo">Todo</Link>
+      <Link to="/">Todo</Link>
       <Link to="/profile">Profile</Link>
     </Space>
   );

@@ -21,12 +21,8 @@ const TodoList: React.FC<TodoListProps> = ({ todos, setData, loadTodos }) => {
   };
   const finishEditing = async (editId: number, editTitle: string) => {
     try {
-      const updatedTask = await updateTask(editId, { title: editTitle });
-      setData((prevTodos: Todo[]) =>
-        prevTodos.map((todo: Todo) =>
-          todo.id === editId ? { ...todo, ...updatedTask } : todo
-        )
-      );
+      await updateTask(editId, { title: editTitle });
+      await loadTodos();
       setEditId(null);
       setEditTitle("");
     } catch (error) {

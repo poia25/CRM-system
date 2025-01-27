@@ -8,12 +8,7 @@ import { Button, Checkbox, Space, Typography, Form, Input } from "antd";
 const { Text } = Typography;
 
 interface TaskProps {
-  todo: {
-    id: number;
-    title: string;
-    created: string;
-    isDone: boolean;
-  };
+  todo: Todo;
   data: Todo[];
   loadTodos: () => void;
   startEditing: (id: number, currentTitle: string) => void;

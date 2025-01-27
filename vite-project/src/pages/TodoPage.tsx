@@ -22,19 +22,6 @@ function TodoPage() {
     }
   };
   useEffect(() => {
-    // const fetchData = async () => {
-    //   try {
-    //     const result = await Fetch();
-    //     setData(result.data);
-    //   } catch {
-    //     console.log("БЕДА");
-    //   }
-    // };
-    // fetchData();
-    // const interval = setInterval(() => {
-    //   fetchData();
-    // }, 5000);
-    // return () => clearInterval(interval);
     loadTodos();
     const interval = setInterval(() => {
       loadTodos();
@@ -49,16 +36,10 @@ function TodoPage() {
     }, 5000);
     return () => clearInterval(interval);
   }, []);
-
-  // const filteredTasks = data?.filter((task) => {
-  //   if (activeTab === "completed") return !task.isDone;
-  //   if (activeTab === "pending") return task.isDone;
-  //   return true;
-  // });
   return (
     <>
       <div className="App">
-        <TodoForm setData={setData} loadTodos={loadTodos} />
+        <TodoForm loadTodos={loadTodos} />
         <Tabs info={info} activeTab={activeTab} setActiveTab={setActiveTab} />
         <TodoList todos={data} setData={setData} loadTodos={loadTodos} />
       </div>

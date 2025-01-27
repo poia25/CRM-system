@@ -1,18 +1,15 @@
 import { addTask } from "../../api/api";
-import { Todo } from "../../types/todo";
 import { Button, Form, Input } from "antd";
 interface TodoFormProps {
-  setData: React.Dispatch<React.SetStateAction<Todo[]>>;
   loadTodos: () => void;
 }
 
-const TodoForm: React.FC<TodoFormProps> = ({ setData, loadTodos }) => {
+const TodoForm: React.FC<TodoFormProps> = ({ loadTodos }) => {
   const [form] = Form.useForm();
 
   const handleAddTask = async (values: { task: string }) => {
-    const newTask = await addTask({ title: values.task, isDone: false });
-    setData((prevData) => [...prevData, newTask]);
-    loadTodos();
+    await addTask({ title: values.task, isDone: false });
+    await loadTodos();
     form.resetFields();
   };
 

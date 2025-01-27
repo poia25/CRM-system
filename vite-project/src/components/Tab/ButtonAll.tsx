@@ -1,6 +1,5 @@
 import { TodoStatus } from "../../types/todo.ts";
 import { TodoInfo } from "../../types/todo.ts";
-// import styles from "./Tabs.module.css";
 import { Button, Space } from "antd";
 
 interface ButtonProps {
