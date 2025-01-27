@@ -10,7 +10,7 @@ interface TodoListProps {
   loadTodos: () => void;
 }
 
-const TodoList: React.FC<TodoListProps> = ({ todos, setData, loadTodos }) => {
+const TodoList: React.FC<TodoListProps> = ({ todos, loadTodos }) => {
   const [editId, setEditId] = useState<number | null>(null);
   const [editTitle, setEditTitle] = useState<string>("");
 
