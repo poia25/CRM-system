@@ -15,19 +15,12 @@ function TodoPage() {
   const [activeTab, setActiveTab] = useState<TodoStatus>(TodoStatus.All);
 
   const loadTodos = async () => {
-    const response = await fetchTodos(TodoStatus.All);
+    const response = await fetchTodos(activeTab);
     if (response) {
       setInfo(response.info || null);
       setData(response.data);
     }
   };
-  useEffect(() => {
-    loadTodos();
-    const interval = setInterval(() => {
-      loadTodos();
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
 
   useEffect(() => {
     loadTodos();
@@ -35,13 +28,13 @@ function TodoPage() {
       loadTodos();
     }, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [activeTab]);
   return (
     <>
       <div className="App">
         <TodoForm loadTodos={loadTodos} />
-        <Tabs info={info} activeTab={activeTab} setActiveTab={setActiveTab} />
-        <TodoList todos={data} setData={setData} loadTodos={loadTodos} />
+        <Tabs info={info} activeTab={activeTab} setActiveTab={setActiveTab}/>
+        <TodoList todos={data} loadTodos={loadTodos} />
       </div>
     </>
   );

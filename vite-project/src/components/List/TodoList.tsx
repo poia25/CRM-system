@@ -6,7 +6,6 @@ import styles from "./List.module.css";
 
 interface TodoListProps {
   todos: Todo[];
-  setData: React.Dispatch<React.SetStateAction<Todo[]>>;
   loadTodos: () => void;
 }
 
