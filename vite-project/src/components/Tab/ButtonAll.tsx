@@ -17,7 +17,7 @@ const ButtonAll: React.FC<ButtonProps> = ({
     <div>
       <button
         className={`${(styles.tab, styles.button)} ${
-          activeTab === "all" ? styles.tabActive : ""
+          activeTab === TodoStatus.All ? styles.tabActive : ""
         }`}
         onClick={() => setActiveTab(TodoStatus.All)}
       >
@@ -25,17 +25,18 @@ const ButtonAll: React.FC<ButtonProps> = ({
       </button>
       <button
         className={`${(styles.tab, styles.button)} ${
-          activeTab === "completed" ? styles.tabActive : ""
+          activeTab === TodoStatus.Pending ? styles.tabActive : ""
         }`}
-        onClick={() => setActiveTab(TodoStatus.Completed)}
+        onClick={() => setActiveTab(TodoStatus.Pending)}
       >
         в работе({info.inWork})
       </button>
+
       <button
         className={`${(styles.tab, styles.button)} ${
-          activeTab === "pending" ? styles.tabActive : ""
+          activeTab === TodoStatus.Completed ? styles.tabActive : ""
         }`}
-        onClick={() => setActiveTab(TodoStatus.Pending)}
+        onClick={() => setActiveTab(TodoStatus.Completed)}
       >
         сделано({info.completed})
       </button>

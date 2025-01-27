@@ -16,7 +16,7 @@ function App() {
   const [activeTab, setActiveTab] = useState<TodoStatus>(TodoStatus.All);
 
   const loadTodos = async () => {
-    const response = await fetchTodos(TodoStatus.All);
+    const response = await fetchTodos(activeTab);
     if (response) {
       setInfo(response.info || null);
       setData(response.data);
@@ -24,11 +24,8 @@ function App() {
   };
   useEffect(() => {
     loadTodos();
-  }, []);
-
-  useEffect(() => {
-    loadTodos();
-  }, []);
+  }, [activeTab]);
+  
   return (
     <div className="App">
       <TodoForm loadTodos={loadTodos} />
