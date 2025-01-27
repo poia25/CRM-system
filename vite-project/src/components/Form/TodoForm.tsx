@@ -10,8 +10,8 @@ const TodoForm: React.FC<TodoFormProps> = ({ setData, loadTodos }) => {
   const [form] = Form.useForm();
 
   const handleAddTask = async (values: { task: string }) => {
-    const NewTask = await addTask({ title: values.task, isDone: false });
-    setData((prevData) => [...prevData, NewTask]);
+    const newTask = await addTask({ title: values.task, isDone: false });
+    setData((prevData) => [...prevData, newTask]);
     loadTodos();
     form.resetFields();
   };

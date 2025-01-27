@@ -3,7 +3,6 @@ import { Todo } from "../../types/todo.ts";
 import Task from "./Task.tsx";
 import { updateTask } from "../../api/api.ts";
 import styles from "./List.module.css";
-import { Button, Form, Input, Space } from "antd";
 
 interface TodoListProps {
   todos: Todo[];
@@ -43,53 +42,19 @@ const TodoList: React.FC<TodoListProps> = ({ todos, setData, loadTodos }) => {
       <ul className={styles.list}>
         {todos?.map((todo) => (
           <li key={todo.id} className={styles.taskItem}>
-            {editId === todo.id ? (
-              <>
-                <Form>
-                  <Space>
-                    <Form.Item
-                      name="input"
-                      rules={[
-                        { required: true, message: "Input is required!" },
-                        {
-                          min: 2,
-                          message: "Input must be at least 2 characters long!",
-                        },
-                        {
-                          max: 64,
-                          message: "Input cannot exceed 64 characters!",
-                        },
-                      ]}
-                      style={{ marginTop: "20px" }}
-                    >
-                      <Input
-                        defaultValue={editTitle}
-                        onChange={(e) => setEditTitle(e.target.value)}
-                      />
-                    </Form.Item>
-                    <Button onClick={closeEdeting} type="primary" danger>
-                      Отмена
-                    </Button>
-                    <Button
-                      onClick={() => finishEditing(editId, editTitle)}
-                      type="primary"
-                    >
-                      Сохранить
-                    </Button>
-                  </Space>
-                </Form>
-              </>
-            ) : (
-              <>
-                <Task
-                  todo={todo}
-                  data={todos}
-                  setData={setData}
-                  loadTodos={loadTodos}
-                  startEditing={startEditing}
-                />
-              </>
-            )}
+            <>
+              <Task
+                todo={todo}
+                data={todos}
+                loadTodos={loadTodos}
+                startEditing={startEditing}
+                editTitle={editTitle}
+                setEditTitle={setEditTitle}
+                closeEdeting={closeEdeting}
+                finishEditing={finishEditing}
+                editId={editId}
+              />
+            </>
           </li>
         ))}
       </ul>

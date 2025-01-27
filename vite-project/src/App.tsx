@@ -9,8 +9,8 @@ function App() {
       <BrowserRouter>
         <Sidebar />
         <Routes>
-          <Route path="/profile" element={<ProfilePage />} />
           <Route path="/todo" element={<TodoPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
         </Routes>
       </BrowserRouter>
     </>

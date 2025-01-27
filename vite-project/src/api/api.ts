@@ -3,11 +3,6 @@ import axios from "axios";
 
 const url = "https://easydev.club/api/v1/todos";
 
-export async function Fetch() {
-  const response = await axios.get(url);
-  return response.data;
-}
-
 export async function addTask(task: TodoRequest) {
   const response = await axios.post(url, task, {
     headers: {
@@ -34,9 +29,7 @@ export const EditingTask = async (id: number, isDone: boolean) => {
   return response.data;
 };
 
-export const fetchTodos = async (
-  status: TodoStatus.All | TodoStatus.Completed | TodoStatus.Pending
-) => {
+export const fetchTodos = async (status: TodoStatus) => {
   const queryParam = status ? `?filter=${status}` : "";
   const response = await axios.get(`${url}${queryParam}`, {
     headers: {
