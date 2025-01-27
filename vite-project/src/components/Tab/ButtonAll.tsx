@@ -23,15 +23,15 @@ const ButtonAll: React.FC<ButtonProps> = ({
       </Button>
 
       <Button
-        onClick={() => setActiveTab(TodoStatus.Completed)}
-        type={activeTab === TodoStatus.Completed ? "primary" : "default"}
+        onClick={() => setActiveTab(TodoStatus.Pending)}
+        type={activeTab === TodoStatus.Pending ? "primary" : "default"}
       >
         в работе({info.inWork})
       </Button>
 
       <Button
-        onClick={() => setActiveTab(TodoStatus.Pending)}
-        type={activeTab === TodoStatus.Pending ? "primary" : "default"}
+        onClick={() => setActiveTab(TodoStatus.Completed)}
+        type={activeTab === TodoStatus.Completed ? "primary" : "default"}
       >
         сделано({info.completed})
       </Button>
