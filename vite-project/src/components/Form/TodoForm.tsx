@@ -1,6 +1,7 @@
 import { addTask } from "../../api/api";
 import { Button, Form, Input } from "antd";
-interface TodoFormProps {
+
+export interface TodoFormProps {
   loadTodos: () => void;
 }
 

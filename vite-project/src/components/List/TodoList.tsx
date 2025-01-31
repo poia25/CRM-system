@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { Todo } from "../../types/todo.ts";
 import Task from "./Task.tsx";
 import { updateTask } from "../../api/api.ts";
 import styles from "./List.module.css";
+import { Todo } from "../../types/todo.ts";
 
-interface TodoListProps {
+export interface TodoListProps {
   todos: Todo[];
   loadTodos: () => void;
 }
@@ -16,7 +16,6 @@ const TodoList: React.FC<TodoListProps> = ({ todos, loadTodos }) => {
   const startEditing = (id: number, currentTitle: string) => {
     setEditId(id);
     setEditTitle(currentTitle);
-    console.log(editId);
   };
   const finishEditing = async (editId: number, editTitle: string) => {
     try {

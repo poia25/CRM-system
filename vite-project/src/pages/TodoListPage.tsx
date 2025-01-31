@@ -17,7 +17,7 @@ function TodoPage() {
   const loadTodos = async () => {
     const response = await fetchTodos(activeTab);
     if (response) {
-      setInfo(response.info || null);
+      setInfo(response.info);
       setData(response.data);
     }
   };

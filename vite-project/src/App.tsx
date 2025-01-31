@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import ProfilePage from "./pages/ProfilePage.tsx";
-import TodoPage from "./pages/TodoPage.tsx";
+import TodoListPage from "./pages/TodoListPage.tsx";
 import Sidebar from "./components/Sidebar.tsx";
 
 function App() {
@@ -9,7 +9,7 @@ function App() {
       <BrowserRouter>
         <Sidebar />
         <Routes>
-          <Route path="/" element={<TodoPage />} />
+          <Route path="/" element={<TodoListPage />} />
           <Route path="/profile" element={<ProfilePage />} />
         </Routes>
       </BrowserRouter>

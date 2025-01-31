@@ -1,13 +1,13 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { deleteTask, EditingTask } from "../../api/api";
-import { Todo } from "../../types/todo";
 import styles from "./List.module.css";
 import { Button, Checkbox, Space, Typography, Form, Input } from "antd";
+import { Todo } from "../../types/todo";
 
 const { Text } = Typography;
 
-interface TaskProps {
+export interface TaskProps {
   todo: Todo;
   data: Todo[];
   loadTodos: () => void;
@@ -53,7 +53,7 @@ const Task: React.FC<TaskProps> = ({
   return (
     <>
       {editId === todo.id ? (
-        <Form>
+        <Form initialValues={{ input: editTitle }}>
           <Space>
             <Form.Item
               name="input"
@@ -70,10 +70,7 @@ const Task: React.FC<TaskProps> = ({
               ]}
               style={{ marginTop: "20px" }}
             >
-              <Input
-                defaultValue={editTitle}
-                onChange={(e) => setEditTitle(e.target.value)}
-              />
+              <Input onChange={(e) => setEditTitle(e.target.value)} />
             </Form.Item>
             <Button onClick={closeEdeting} type="primary" danger>
               Отмена
