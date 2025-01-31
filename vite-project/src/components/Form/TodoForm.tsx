@@ -1,30 +1,27 @@
 import { useState } from "react";
 import { addTask } from "../../api/api";
-import { Todo } from "../../types/todo";
 import styles from "./Form.module.css";
 interface TodoFormProps {
-  setData: React.Dispatch<React.SetStateAction<Todo[]>>;
   loadTodos: () => void;
 }
 
-const TodoForm: React.FC<TodoFormProps> = ({ setData, loadTodos }) => {
+const TodoForm: React.FC<TodoFormProps> = ({ loadTodos }) => {
   const [newTask, setNewTask] = useState<string>("");
 
   const handleAddTask = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newTask.length > 2 && newTask.length < 64) {
-      const NewTask = await addTask({ title: newTask, isDone: false });
-      setData((prevData) => [...prevData, NewTask]);
-      loadTodos();
+      await addTask({ title: newTask, isDone: false });
+      await loadTodos();
       setNewTask("");
-    }else{
-      alert('Некорректное количество символов')
+    } else {
+      alert("Некорректное количество символов");
     }
   };
 
   return (
     <>
-      <form className={styles.form}>
+      <form onSubmit={handleAddTask} className={styles.form}>
         <input
           type="text"
           value={newTask}
@@ -32,9 +29,7 @@ const TodoForm: React.FC<TodoFormProps> = ({ setData, loadTodos }) => {
           placeholder="Add a new task"
           className={styles.input}
         />
-        <button onClick={handleAddTask} className={styles.button}>
-          Add
-        </button>
+        <button type="submit" className={styles.button}>Add</button>
       </form>
     </>
   );

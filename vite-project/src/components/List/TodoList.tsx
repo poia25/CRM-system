@@ -10,23 +10,18 @@ interface TodoListProps {
   loadTodos: () => void;
 }
 
-const TodoList: React.FC<TodoListProps> = ({ todos, setData, loadTodos }) => {
+const TodoList: React.FC<TodoListProps> = ({ todos, loadTodos }) => {
   const [editId, setEditId] = useState<number | null>(null);
   const [editTitle, setEditTitle] = useState<string>("");
 
   const startEditing = (id: number, currentTitle: string) => {
     setEditId(id);
     setEditTitle(currentTitle);
-    console.log(editId);
   };
   const finishEditing = async (editId: number, editTitle: string) => {
     try {
-      const updatedTask = await updateTask(editId, { title: editTitle });
-      setData((prevTodos: Todo[]) =>
-        prevTodos.map((todo: Todo) =>
-          todo.id === editId ? { ...todo, ...updatedTask } : todo
-        )
-      );
+      await updateTask(editId, { title: editTitle });
+      await loadTodos();
       setEditId(null);
       setEditTitle("");
     } catch (error) {
@@ -42,37 +37,17 @@ const TodoList: React.FC<TodoListProps> = ({ todos, setData, loadTodos }) => {
       <ul className={styles.list}>
         {todos?.map((todo) => (
           <li key={todo.id} className={styles.taskItem}>
-            {editId === todo.id ? (
-              <>
-                <input
-                  className={styles.change}
-                  type="text"
-                  value={editTitle}
-                  onChange={(e) => setEditTitle(e.target.value)}
-                />
-                <div className={styles.actions_2}>
-                  <button onClick={closeEdeting} className={styles.btn1}>
-                    Отмена
-                  </button>
-                  <button
-                    className={styles.btn2}
-                    onClick={() => finishEditing(editId, editTitle)}
-                  >
-                    Сохранить
-                  </button>
-                </div>
-              </>
-            ) : (
-              <>
-                <Task
-                  todo={todo}
-                  data={todos}
-                  setData={setData}
-                  loadTodos={loadTodos}
-                  startEditing={startEditing}
-                />
-              </>
-            )}
+            <Task
+              todo={todo}
+              data={todos}
+              loadTodos={loadTodos}
+              startEditing={startEditing}
+              editTitle={editTitle}
+              setEditTitle={setEditTitle}
+              closeEdeting={closeEdeting}
+              finishEditing={finishEditing}
+              editId={editId}
+            />
           </li>
         ))}
       </ul>
