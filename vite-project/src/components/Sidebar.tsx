@@ -1,6 +1,5 @@
 import { Menu } from "antd";
 import { Link } from "react-router-dom";
-import { AppstoreOutlined, UserOutlined } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 
 
