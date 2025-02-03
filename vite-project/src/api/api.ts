@@ -10,7 +10,7 @@ const axiosInstance = axios.create({
 
 export async function addTask(task: TodoRequest) {
   try {
-    const response = await axiosInstance.post("/todos", task);
+    const response = await axiosInstance.post("", task);
     return response.data;
   } catch (error) {
     console.error("Ошибка при добавление", error);
