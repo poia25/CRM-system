@@ -15,26 +15,25 @@ export interface TaskProps {
 }
 
 const Task: React.FC<TaskProps> = ({ todo, data, loadTodos }) => {
-  const [editId, setEditId] = useState<number | null>(null);
+  const [editId, setEditId] = useState<boolean>(false);
   const [editTitle, setEditTitle] = useState<string>("");
 
-  const startEditing = (id: number, currentTitle: string) => {
-    setEditId(id);
+  const startEditing = (currentTitle: string) => {
+    setEditId(true);
     setEditTitle(currentTitle);
   };
-  const finishEditing = async (editId: number, editTitle: string) => {
-    console.log(editTitle)
+  const finishEditing = async (id: number, editTitle: string) => {
     try {
-      await updateTask(editId, { title: editTitle });
+      await updateTask(id, { title: editTitle });
       await loadTodos();
-      setEditId(null);
+      setEditId(false);
       setEditTitle("");
     } catch (error) {
       console.error("Error updating the task:", error);
     }
   };
   const closeEdeting = () => {
-    setEditId(null);
+    setEditId(false);
   };
   const handleDeleteTask = async (id: number) => {
     try {
@@ -58,8 +57,11 @@ const Task: React.FC<TaskProps> = ({ todo, data, loadTodos }) => {
 
   return (
     <>
-      {editId === todo.id ? (
-        <Form initialValues={{ title: editTitle }} onFinish={() => finishEditing(editId, editTitle)}>
+      {editId ? (
+        <Form
+          initialValues={{ title: editTitle }}
+          onFinish={() => finishEditing(todo.id, editTitle)}
+        >
           <Space>
             <Form.Item
               name="title"
@@ -81,10 +83,7 @@ const Task: React.FC<TaskProps> = ({ todo, data, loadTodos }) => {
             <Button onClick={closeEdeting} type="primary" danger>
               Отмена
             </Button>
-            <Button
-              htmlType="submit"
-              type="primary"
-            >
+            <Button htmlType="submit" type="primary">
               Сохранить
             </Button>
           </Space>
@@ -108,10 +107,7 @@ const Task: React.FC<TaskProps> = ({ todo, data, loadTodos }) => {
           </Space>
 
           <div className={styles.actions}>
-            <Button
-              type="primary"
-              onClick={() => startEditing(todo.id, todo.title)}
-            >
+            <Button type="primary" onClick={() => startEditing(todo.title)}>
               <FontAwesomeIcon icon={faEdit} />
             </Button>
             <Button
