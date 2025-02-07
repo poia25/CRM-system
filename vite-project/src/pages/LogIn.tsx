@@ -1,20 +1,48 @@
-import { Flex, Form, Input, Checkbox, Button, Space } from "antd";
+import { Flex, Form, Input, Button, Space } from "antd";
 import { Typography } from "antd";
-import { Link } from 'react-router-dom';
+import { useState } from "react";
+import { Link,useNavigate } from "react-router-dom";
+import { AuthData } from "../types/user";
+import { RootState, useAppDispatch } from "../store/store";
+import { loginUser } from "../store/actionCreators";
+import axios from "axios";
+import { useSelector } from "react-redux";
 
 const { Title } = Typography;
 
 export const LogIn = () => {
+  const [form] = Form.useForm();
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate()
+  const isAuthenticated = useSelector((state: RootState) => state.auth.authState);
+
+  const onFinishHandleLogin = async (values: AuthData) => {
+    try {
+      await dispatch(loginUser(values));
+      navigate('/')  //настроить APP что бы был перход
+
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error.response?.data === "Invalid credentials\n") {
+          form.setFields([
+            { name: "password", errors: ["Неверные логин или пароль"] },
+          ]);
+        }
+      }
+      throw error
+    }
+  };
+
   return (
     <>
       <Flex gap="large" align="center" style={{ width: "100%" }}>
         <Flex style={{ margin: "0 auto" }}>
-          <Form>
+          <Form form={form} onFinish={onFinishHandleLogin}>
             <Title level={3} style={{ marginBottom: 30, textAlign: "center" }}>
               Login to your Account
             </Title>
             <Form.Item
-              name="Email"
+              name="login"
               rules={[
                 {
                   required: true,
@@ -36,10 +64,7 @@ export const LogIn = () => {
               <Input type="password" placeholder="***********" />
             </Form.Item>
             <Form.Item>
-              <Flex justify="space-between" align="center">
-                <Form.Item name="remember" valuePropName="checked" noStyle>
-                  <Checkbox>Remember me</Checkbox>
-                </Form.Item>
+              <Flex justify="end" align="center">
                 <a href="">Forgot password?</a>
               </Flex>
               <Button

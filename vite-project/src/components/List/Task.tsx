@@ -1,35 +1,40 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit, faTrash } from "@fortawesome/free-solid-svg-icons";
-import { deleteTask, EditingTask } from "../../api/api";
-import { Todo } from "../../types/todo";
+import { deleteTask, editTask, updateTask } from "../../api/api";
 import styles from "./List.module.css";
 import { Button, Checkbox, Space, Typography, Form, Input } from "antd";
+import { Todo } from "../../types/todo";
+import { useState } from "react";
 
 const { Text } = Typography;
 
-interface TaskProps {
+export interface TaskProps {
   todo: Todo;
   data: Todo[];
   loadTodos: () => void;
-  startEditing: (id: number, currentTitle: string) => void;
-  editTitle: string;
-  editId: number | null;
-  setEditTitle: (title: string) => void;
-  finishEditing: (id: number, title: string) => void;
-  closeEdeting: () => void;
 }
 
-const Task: React.FC<TaskProps> = ({
-  todo,
-  data,
-  loadTodos,
-  startEditing,
-  editTitle,
-  editId,
-  setEditTitle,
-  finishEditing,
-  closeEdeting,
-}) => {
+const Task: React.FC<TaskProps> = ({ todo, data, loadTodos }) => {
+  const [editId, setEditId] = useState<boolean>(false);
+  const [editTitle, setEditTitle] = useState<string>("");
+
+  const startEditing = (currentTitle: string) => {
+    setEditId(true);
+    setEditTitle(currentTitle);
+  };
+  const finishEditing = async (id: number, editTitle: string) => {
+    try {
+      await updateTask(id, { title: editTitle });
+      await loadTodos();
+      setEditId(false);
+      setEditTitle("");
+    } catch (error) {
+      console.error("Error updating the task:", error);
+    }
+  };
+  const closeEdeting = () => {
+    setEditId(false);
+  };
   const handleDeleteTask = async (id: number) => {
     try {
       await deleteTask(id);
@@ -43,7 +48,7 @@ const Task: React.FC<TaskProps> = ({
     const task = data.find((t) => t.id === id);
     if (!task) return;
     try {
-      await EditingTask(id, task.isDone);
+      await editTask(id, task.isDone);
       await loadTodos();
     } catch (error) {
       console.error("Не удалось обновить задачу:", error);
@@ -52,11 +57,14 @@ const Task: React.FC<TaskProps> = ({
 
   return (
     <>
-      {editId === todo.id ? (
-        <Form>
+      {editId ? (
+        <Form
+          initialValues={{ title: editTitle }}
+          onFinish={() => finishEditing(todo.id, editTitle)}
+        >
           <Space>
             <Form.Item
-              name="input"
+              name="title"
               rules={[
                 { required: true, message: "Input is required!" },
                 {
@@ -70,18 +78,12 @@ const Task: React.FC<TaskProps> = ({
               ]}
               style={{ marginTop: "20px" }}
             >
-              <Input
-                defaultValue={editTitle}
-                onChange={(e) => setEditTitle(e.target.value)}
-              />
+              <Input onChange={(e) => setEditTitle(e.target.value)} />
             </Form.Item>
             <Button onClick={closeEdeting} type="primary" danger>
               Отмена
             </Button>
-            <Button
-              onClick={() => finishEditing(editId, editTitle)}
-              type="primary"
-            >
+            <Button htmlType="submit" type="primary">
               Сохранить
             </Button>
           </Space>
@@ -105,10 +107,7 @@ const Task: React.FC<TaskProps> = ({
           </Space>
 
           <div className={styles.actions}>
-            <Button
-              type="primary"
-              onClick={() => startEditing(todo.id, todo.title)}
-            >
+            <Button type="primary" onClick={() => startEditing(todo.title)}>
               <FontAwesomeIcon icon={faEdit} />
             </Button>
             <Button

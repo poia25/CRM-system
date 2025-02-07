@@ -36,6 +36,6 @@ export interface PasswordRequest {
 }
 
 export interface Token {
-  access: string;
-  refresh: string;
+  accessToken: string;
+  refreshToken: string;
 }
