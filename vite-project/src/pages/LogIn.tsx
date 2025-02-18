@@ -4,7 +4,6 @@ import { Link, Navigate, useNavigate } from "react-router-dom";
 import { AuthData } from "../types/user";
 import { RootState, useAppDispatch } from "../store/store";
 import { loginUser } from "../store/actionCreators";
-import axios from "axios";
 import { useSelector } from "react-redux";
 
 const { Title } = Typography;
