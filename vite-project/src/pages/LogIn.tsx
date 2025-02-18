@@ -1,7 +1,6 @@
 import { Flex, Form, Input, Button, Space } from "antd";
 import { Typography } from "antd";
-import { useState } from "react";
-import { Link,useNavigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import { AuthData } from "../types/user";
 import { RootState, useAppDispatch } from "../store/store";
 import { loginUser } from "../store/actionCreators";
@@ -10,30 +9,28 @@ import { useSelector } from "react-redux";
 
 const { Title } = Typography;
 
-export const LogIn = () => {
+export const LogIn: React.FC = () => {
   const [form] = Form.useForm();
   const dispatch = useAppDispatch();
-  const navigate = useNavigate()
-  const isAuthenticated = useSelector((state: RootState) => state.auth.authState);
+  const navigate = useNavigate();
 
   const onFinishHandleLogin = async (values: AuthData) => {
     try {
       await dispatch(loginUser(values));
-      navigate('/')  //настроить APP что бы был перход
-
+      navigate("/todo");
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        if (error.response?.data === "Invalid credentials\n") {
-          form.setFields([
-            { name: "password", errors: ["Неверные логин или пароль"] },
-          ]);
-        }
-      }
-      throw error
+    alert('Неверные логин или пароль')
+      throw error;
     }
   };
 
-  return (
+  const isLogged = useSelector(
+    (state: RootState) => !!state.auth.profileData.profile
+  );
+
+  return isLogged ? (
+    <Navigate to="/todo" replace />
+  ) : (
     <>
       <Flex gap="large" align="center" style={{ width: "100%" }}>
         <Flex style={{ margin: "0 auto" }}>
@@ -64,14 +61,10 @@ export const LogIn = () => {
               <Input type="password" placeholder="***********" />
             </Form.Item>
             <Form.Item>
-              <Flex justify="end" align="center">
-                <a href="">Forgot password?</a>
-              </Flex>
               <Button
                 block
                 type="primary"
                 htmlType="submit"
-                style={{ margin: "20px 0" }}
               >
                 Log in
               </Button>
@@ -79,7 +72,7 @@ export const LogIn = () => {
 
             <Space>
               <Typography.Text>Not Registered Yet?</Typography.Text>
-              <Link to={`/signup`}>Create an account</Link>
+              <Link to={`/auth/register`}>Create an account</Link>
             </Space>
           </Form>
         </Flex>

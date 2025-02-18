@@ -9,7 +9,6 @@ export const SignUpPage = () => {
   const [success, setSuccess] = useState<boolean>(false);
   const [form] = Form.useForm();
 
-
   const onFinishHandler = async (values: UserRegistration) => {
     try {
       await userRegistr({ ...values, phoneNumber: "+" + values.phoneNumber });
@@ -27,13 +26,14 @@ export const SignUpPage = () => {
     }
   };
 
-  return ( success ? (
+  return success ? (
     <>
-      <Typography>Вы успешно зарегистрировались. Теперь можно войти в систему</Typography>
-      <Link to={`/signin`}>Вход</Link>
+      <Typography>
+        Вы успешно зарегистрировались. Теперь можно войти в систему
+      </Typography>
+      <Link to={`/auth`}>Вход</Link>
     </>
-  ):(
-
+  ) : (
     <>
       <Flex gap="large" align="center" style={{ width: "100%" }}>
         <Flex style={{ margin: "0 auto" }}>
@@ -159,7 +159,6 @@ export const SignUpPage = () => {
         </Flex>
       </Flex>
     </>
-  )
   );
 };
 

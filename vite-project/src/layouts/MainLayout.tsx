@@ -1,5 +1,5 @@
 import { Menu } from "antd";
-import { Link } from "react-router-dom";
+import { Link, Outlet } from "react-router-dom";
 import type { MenuProps } from "antd";
 
 
@@ -9,7 +9,7 @@ const Sidebar = () => {
   const menuItems: MenuProps["items"] = [
     {
       key: "1",
-      label: <Link to="/">Todo</Link>,
+      label: <Link to="/todo">Todo</Link>,
     },
     {
       key: "2",
@@ -30,6 +30,7 @@ const Sidebar = () => {
           float: "left",
         }}
       />
+      <Outlet />
       
     </>
   );

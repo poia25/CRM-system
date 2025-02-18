@@ -1,35 +1,53 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import ProfilePage from "./pages/ProfilePage.tsx";
 import TodoPage from "./pages/TodoPage.tsx";
-import Sidebar from "./components/Sidebar.tsx";
+import MainLayout from "./layouts/MainLayout.tsx";
 import LogIn from "./pages/LogIn.tsx";
 import SignUpPage from "./pages/SignUpPage.tsx";
 import { AuthLayout } from "./layouts/AuthLayouts.tsx";
-import ProtectedRoute from "./pages/ProtetedRoute.tsx";
+import { useAppDispatch, RootState } from "./store/store.ts";
+import { useEffect } from "react";
+import { getProfile } from "./store/actionCreators.ts";
+import { useSelector } from "react-redux";
+import { Spin } from "antd";
 
 function App() {
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    dispatch(getProfile());
+  }, [dispatch]);
+
+  const isLogged = useSelector(
+    (state: RootState) => !!state.auth.profileData.profile
+  );
+  const isLoadingAuth = useSelector(
+    (state: RootState) => !!state.auth.authData.isLoading
+  );
+  const isLoadingProfile = useSelector(
+    (state: RootState) => !!state.auth.profileData.isLoading
+  );
+  if (isLoadingAuth || isLoadingProfile === true) {
+    return <Spin spinning fullscreen />;
+  }
+
   return (
     <>
       <BrowserRouter>
         <Routes>
-          <Route path="/login" element={<AuthLayout />}>
-            <Route index element={<LogIn />} />
-            <Route path="signin" element={<LogIn />} />
-            <Route path="signup" element={<SignUpPage />} />
-          </Route>
-          <Route path="/" element={<ProtectedRoute />}>
-            <Route index element={<TodoPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
-          </Route>
+          {isLogged ? (
+            <Route path="/" element={<MainLayout />}>
+              <Route path="todo" element={<TodoPage />} />
+              <Route path="profile" element={<ProfilePage />} />
+            </Route>
+          ) : (
+            <Route path="/auth" element={<AuthLayout />}>
+              <Route index element={<LogIn />} />
+              <Route path="register" element={<SignUpPage />} />
+            </Route>
+          )}
         </Routes>
       </BrowserRouter>
-      {/* <BrowserRouter>
-        <Sidebar />
-        <Routes>
-          <Route path="/" element={<TodoPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
-        </Routes>
-      </BrowserRouter> */}
     </>
   );
 }

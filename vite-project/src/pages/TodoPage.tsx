@@ -29,11 +29,12 @@ function TodoPage() {
     }, 5000);
     return () => clearInterval(interval);
   }, [activeTab]);
+
   return (
     <>
       <div className="App">
         <TodoForm loadTodos={loadTodos} />
-        <Tabs info={info} activeTab={activeTab} setActiveTab={setActiveTab}/>
+        <Tabs info={info} activeTab={activeTab} setActiveTab={setActiveTab} />
         <TodoList todos={data} loadTodos={loadTodos} />
       </div>
     </>

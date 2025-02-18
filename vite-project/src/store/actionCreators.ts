@@ -1,5 +1,5 @@
-import { Dispatch } from "@reduxjs/toolkit";
-import { AuthData, Token } from "../types/user";
+import { Dispatch, UnknownAction } from "@reduxjs/toolkit";
+import { AuthData, Profile, ProfileRequest, Token } from "../types/user";
 import {
   loginFailure,
   loginStart,
@@ -7,38 +7,100 @@ import {
   loadProfileStart,
   loadProfileSuccess,
   loadProfileFailure,
+  logoutSucces,
 } from "./authReducer";
-import { loadProfile, login } from "../api/auth";
+import {
+  loadProfile,
+  login,
+  logout,
+  refreshToken,
+  updateProfile,
+} from "../api/auth";
 
 export const loginUser = (data: AuthData) => {
   return async (dispatch: Dispatch): Promise<void> => {
     try {
-      dispatch(loginStart()); // Начало запроса
-
-      const res: Token = await login(data); // Отправляем запрос на сервер
-
-      // Сохраняем токены
+      dispatch(loginStart());
+      const res: Token = await login(data);
       if (!res || !res.accessToken) {
         throw new Error("Отсутствует токен в ответе сервера");
       }
       localStorage.setItem("accessToken", res.accessToken);
       localStorage.setItem("refreshToken", res.refreshToken);
 
-      dispatch(loginSucces(res.accessToken)); // Диспатчим успешный вход
+      dispatch(loginSucces(res.accessToken));
+      dispatch(getProfile() as unknown as UnknownAction);
     } catch (error: any) {
-      dispatch(loginFailure(error.message)); // Обрабатываем ошибку
+      dispatch(loginFailure(error.message));
       throw error;
     }
   };
 };
 
-export const getProfile = () => async (dispatch: Dispatch): Promise<void> => {
+export const getProfile =
+  () =>
+  async (dispatch: Dispatch): Promise<void> => {
     try {
       dispatch(loadProfileStart());
       const res = await loadProfile();
-      dispatch(loadProfileSuccess(res));
+      dispatch(loadProfileSuccess(res!));
     } catch (error: any) {
       dispatch(loadProfileFailure(error.message));
+      throw error;
+    }
+  };
+export const getUpdateProfile =
+  (values: ProfileRequest) =>
+  async (dispatch: Dispatch): Promise<void> => {
+    try {
+      dispatch(loadProfileStart());
+      const res = await updateProfile(values);
+      dispatch(loadProfileSuccess(res as Profile));
+      dispatch(getProfile() as unknown as UnknownAction);
+    } catch (error: any) {
+      dispatch(loadProfileFailure(error.message));
+      throw error;
+    }
+  };
+
+let refreshTokenRequest: Promise<Token> | null = null;
+
+export const getNewAccessToken =
+  () =>
+  async (dispatch: Dispatch): Promise<string | null> => {
+    try {
+      dispatch(loginStart());
+      const currentRefreshToken: string | null =
+        localStorage.getItem("refreshToken");
+      if (refreshTokenRequest === null && currentRefreshToken) {
+        refreshTokenRequest = refreshToken(currentRefreshToken);
+      }
+
+      const res = await refreshTokenRequest;
+      refreshTokenRequest = null;
+
+      if (res) {
+        localStorage.setItem("accessToken", res.accessToken);
+        localStorage.setItem("refreshToken", res.refreshToken);
+        dispatch(loginSucces(res.accessToken));
+        return res.accessToken;
+      }
+      return null;
+    } catch (error: any) {
+      console.log("refresh error:", error);
+      throw error;
+    }
+  };
+
+export const logoutUser =
+  () =>
+  async (dispatch: Dispatch): Promise<void> => {
+    try {
+      await logout();
+      localStorage.clear();
+      dispatch(logoutSucces());
+    } catch (error) {
+      console.log(error);
       throw error;
     }
   };

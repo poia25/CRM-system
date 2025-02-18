@@ -1,73 +1,93 @@
-import axios, { AxiosResponse, RawAxiosRequestConfig } from "axios"; 
-import {UserRegistration, Token,AuthData, Profile} from "../types/user"
+import axios, { AxiosResponse } from "axios";
+import {
+  UserRegistration,
+  Token,
+  AuthData,
+  Profile,
+  ProfileRequest,
+} from "../types/user";
+import TokenService from "../services/tokenServices";
+import { getNewAccessToken } from "../store/actionCreators";
+import { store } from "../store/store";
+import { logoutSucces } from "../store/authReducer";
 
-export const axiosInstance = axios.create({
-  baseURL: 'https://easydev.club/api/v1',
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
 export const axiosInstancePublic = axios.create({
-  baseURL: 'https://easydev.club/api/v1',
+  baseURL: "https://easydev.club/api/v1",
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
+  },
+});
+export const axiosInstance = axios.create({
+  baseURL: "https://easydev.club/api/v1",
+  headers: {
+    "Content-Type": "application/json",
   },
 });
 
-// Автоматически добавляем токен ко всем запросам
-axiosInstance.interceptors.request.use(config => {
-  const token = localStorage.getItem("accessToken");
+axiosInstance.interceptors.request.use((config) => {
+  if (config.url && config.url === "/auth/signin") {
+    return config;
+  }
+
+  const token = TokenService.getToken();
+
   if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+    config.headers.Authorization = "Bearer " + token;
   }
   return config;
 });
 
-axiosInstancePublic.interceptors.response.use(
-  (response) => response, // Если ответ нормальный, ничего не делаем
+axiosInstance.interceptors.response.use(
+  (response) => response,
   async (error) => {
-    if (error.response?.status === 401) {
-      console.log("Токен истёк, пробуем обновить...");
-      const refreshToken = localStorage.getItem("refreshToken");
-      if (refreshToken) {
-        try {
-          const res = await axios.post("https://easydev.club/api/v1/auth/refresh", {
-            refreshToken: refreshToken,
-          });
-          
-          // Сохраняем новый accessToken
-          localStorage.setItem("accessToken", res.data.accessToken);
-          
-          // Повторяем оригинальный запрос с новым токеном
-          error.config.headers.Authorization = `Bearer ${res.data.accessToken}`;
-          return axios(error.config);
-        } catch (refreshError) {
-          console.error("Не удалось обновить токен, выполняем логаут");
-          localStorage.removeItem("accessToken");
-          localStorage.removeItem("refreshToken");
-          window.location.href = "/login"; // Перенаправляем на страницу логина
-        }
+    try {
+      if (error.response?.status === 401 && TokenService.getRefreshToken()) {
+        await store.dispatch(getNewAccessToken());
+        return;
       }
+    } catch (error) {
+      store.dispatch(logoutSucces());
+      throw error;
     }
-    return Promise.reject(error);
   }
 );
 
-
-
-export const userRegistr = async (userData: UserRegistration): Promise<Token> => {
-    const response = await axiosInstancePublic.post(`/auth/signup`, userData);
+export const userRegistr = async (
+  userData: UserRegistration
+): Promise<Token> => {
+  const response = await axiosInstancePublic.post(`/auth/signup`, userData);
   return response.data;
-}
+};
 export const login = async (userLog: AuthData): Promise<Token> => {
-    const response = await axiosInstancePublic.post(`/auth/signin`, userLog);
+  const response = await axiosInstance.post(`/auth/signin`, userLog);
   return response.data;
-}
-export const loadProfile = async (): Promise<Profile> => {
-    const response = await axiosInstancePublic.get(`/user/profile`);
+};
+export const loadProfile = async (): Promise<Profile | null> => {
+  const token = TokenService.getToken();
+  if (!token) {
+    return null;
+  }
+  try {
+    const response = await axiosInstance.get(`/user/profile`);
+    return response.data;
+  } catch (error) {
+    console.log("Ошибка при загрузке профиля", error);
+    throw error;
+  }
+};
+export const refreshToken = async (refreshToken: string): Promise<Token> => {
+  const response = await axiosInstancePublic.post("/auth/refresh", {
+    refreshToken: refreshToken,
+  });
   return response.data;
-}
+};
 export const logout = async (): Promise<AxiosResponse> => {
-    const response = await axiosInstancePublic.post(`/user/logout`);
+  const response = await axiosInstance.post(`/user/logout`);
   return response;
-}
+};
+export const updateProfile = async (
+  value: ProfileRequest
+): Promise<ProfileRequest> => {
+  const response = await axiosInstance.put("/user/profile", value);
+  return response.data;
+};
