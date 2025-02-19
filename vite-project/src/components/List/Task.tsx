@@ -10,11 +10,10 @@ const { Text } = Typography;
 
 export interface TaskProps {
   todo: Todo;
-  data: Todo[];
   loadTodos: () => void;
 }
 
-const Task: React.FC<TaskProps> = ({ todo, data, loadTodos }) => {
+const Task: React.FC<TaskProps> = ({ todo, loadTodos }) => {
   const [editId, setEditId] = useState<boolean>(false);
   const [editTitle, setEditTitle] = useState<string>("");
 
@@ -44,9 +43,7 @@ const Task: React.FC<TaskProps> = ({ todo, data, loadTodos }) => {
     }
   };
 
-  const toogleTask = async (id: number) => {
-    const task = data.find((t) => t.id === id);
-    if (!task) return;
+  const toogleTask = async (id: number, task:Todo) => {
     try {
       await editTask(id, task.isDone);
       await loadTodos();
@@ -93,7 +90,7 @@ const Task: React.FC<TaskProps> = ({ todo, data, loadTodos }) => {
           <Space>
             <Checkbox
               checked={todo.isDone}
-              onChange={() => toogleTask(todo.id)}
+              onChange={() => toogleTask(todo.id, todo)}
               className={styles.input}
             />
             <Text

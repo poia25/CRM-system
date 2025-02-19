@@ -14,7 +14,7 @@ const TodoList: React.FC<TodoListProps> = ({ todos, loadTodos }) => {
         {todos?.map((todo) => (
           <li key={todo.id} className={styles.taskItem}>
             <>
-              <Task todo={todo} data={todos} loadTodos={loadTodos} />
+              <Task todo={todo} loadTodos={loadTodos} />
             </>
           </li>
         ))}
