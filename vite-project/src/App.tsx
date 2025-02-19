@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import ProfilePage from "./pages/ProfilePage.tsx";
 import TodoPage from "./pages/TodoPage.tsx";
 import MainLayout from "./layouts/MainLayout.tsx";
@@ -34,19 +34,22 @@ function App() {
   return (
     <>
       <BrowserRouter>
-        <Routes>
-          {isLogged ? (
+        {isLogged ? (
+          <Routes>
             <Route path="/" element={<MainLayout />}>
               <Route path="todo" element={<TodoPage />} />
               <Route path="profile" element={<ProfilePage />} />
             </Route>
-          ) : (
+          </Routes>
+        ) : (
+          <Routes>
+            <Route path="/" element={<Navigate to="/auth" replace />} />
             <Route path="/auth" element={<AuthLayout />}>
               <Route index element={<LogIn />} />
               <Route path="register" element={<SignUpPage />} />
             </Route>
-          )}
-        </Routes>
+          </Routes>
+        )}
       </BrowserRouter>
     </>
   );
