@@ -7,9 +7,8 @@ import {
   ProfileRequest,
 } from "../types/user";
 import TokenService from "../services/tokenServices";
-import { getNewAccessToken } from "../store/actionCreators";
+import { logoutUser } from "../store/actionCreators";
 import { store } from "../store/store";
-import { logoutSucces } from "../store/authReducer";
 
 export const axiosInstancePublic = axios.create({
   baseURL: "https://easydev.club/api/v1",
@@ -25,14 +24,9 @@ export const axiosInstance = axios.create({
 });
 
 axiosInstance.interceptors.request.use((config) => {
-  if (config.url && config.url === "/auth/signin") {
-    return config;
-  }
-
   const token = TokenService.getToken();
-
   if (token) {
-    config.headers.Authorization = "Bearer " + token;
+    config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
@@ -40,21 +34,35 @@ axiosInstance.interceptors.request.use((config) => {
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
+    if (error.response?.status !== 401) {
+      return Promise.reject(error);
+    }
+    const refreshToken = TokenService.getRefreshToken();
+    if (!refreshToken) {
+      store.dispatch(logoutUser());
+      return Promise.reject(error);
+    }
+
     try {
-      if (error.response?.status === 401 && TokenService.getRefreshToken()) {
-        await store.dispatch(getNewAccessToken());
-        return;
-      }
-    } catch (error) {
-      store.dispatch(logoutSucces());
-      throw error;
+      const response = await axios.post<Token>(
+        "https://easydev.club/api/v1/auth/refresh",
+        { refreshToken }
+      );
+
+      const newAccessToken = response.data.accessToken;
+
+      TokenService.saveToken(newAccessToken);
+      error.config.headers.Authorization = `Bearer ${newAccessToken}`;
+      return axiosInstance(error.config);
+    } catch (refreshError) {
+      return Promise.reject(refreshError);
     }
   }
 );
 
 export const userRegistr = async (
   userData: UserRegistration
-): Promise<Token> => {
+): Promise<Profile> => {
   const response = await axiosInstancePublic.post(`/auth/signup`, userData);
   return response.data;
 };
@@ -63,10 +71,6 @@ export const login = async (userLog: AuthData): Promise<Token> => {
   return response.data;
 };
 export const loadProfile = async (): Promise<Profile | null> => {
-  const token = TokenService.getToken();
-  if (!token) {
-    return null;
-  }
   try {
     const response = await axiosInstance.get(`/user/profile`);
     return response.data;
@@ -76,9 +80,10 @@ export const loadProfile = async (): Promise<Profile | null> => {
   }
 };
 export const refreshToken = async (refreshToken: string): Promise<Token> => {
-  const response = await axiosInstancePublic.post("/auth/refresh", {
-    refreshToken: refreshToken,
-  });
+  const response = await axios.post(
+    "https://easydev.club/api/v1/auth/refresh",
+    { refreshToken }
+  );
   return response.data;
 };
 export const logout = async (): Promise<AxiosResponse> => {

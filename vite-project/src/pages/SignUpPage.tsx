@@ -1,7 +1,6 @@
-import { Flex, Form, Input, Button, Typography } from "antd";
+import { Flex, Form, Input, Button, Typography,message } from "antd";
 import { userRegistr } from "../api/auth.ts";
 import { UserRegistration } from "../types/user.ts";
-import axios from "axios";
 import { useState } from "react";
 import { Link } from "react-router";
 
@@ -10,18 +9,15 @@ export const SignUpPage = () => {
   const [form] = Form.useForm();
 
   const onFinishHandler = async (values: UserRegistration) => {
+    if(values.phoneNumber === ""){
+      values.phoneNumber = "+"
+    } 
     try {
-      await userRegistr({ ...values, phoneNumber: "+" + values.phoneNumber });
+      await userRegistr({ ...values});
+      console.log(values.phoneNumber,values)
       setSuccess(true);
     } catch (error: unknown) {
-      if (axios.isAxiosError(error)) {
-        if (error.response?.data === "\n") {
-          form.setFields([
-            { name: "email", errors: ["Логин или почта уже заняты"] },
-            { name: "login", errors: ["Логин или почта уже заняты"] },
-          ]);
-        }
-      }
+      message.error("Такой логин или почта уже существуют!")
       throw error;
     }
   };
@@ -137,7 +133,7 @@ export const SignUpPage = () => {
               validateDebounce={1000}
               rules={[
                 {
-                  pattern: /^[1-9]\d{1,10}$/,
+                  pattern: /^[1-9]\d{0,10}$/,
                   message: "Неправильный формат телефона",
                 },
               ]}

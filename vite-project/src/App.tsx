@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import ProfilePage from "./pages/ProfilePage.tsx";
 import TodoPage from "./pages/TodoPage.tsx";
 import MainLayout from "./layouts/MainLayout.tsx";
@@ -10,17 +10,16 @@ import { useEffect } from "react";
 import { getProfile } from "./store/actionCreators.ts";
 import { useSelector } from "react-redux";
 import { Spin } from "antd";
+import TokenService from "./services/tokenServices.tsx";
 
 function App() {
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    dispatch(getProfile());
-  }, [dispatch]);
-
-  const isLogged = useSelector(
-    (state: RootState) => !!state.auth.profileData.profile
-  );
+    if (TokenService.getToken()) {
+      dispatch(getProfile());
+    }
+  }, []);
   const isLoadingAuth = useSelector(
     (state: RootState) => !!state.auth.authData.isLoading
   );
@@ -34,22 +33,16 @@ function App() {
   return (
     <>
       <BrowserRouter>
-        {isLogged ? (
-          <Routes>
-            <Route path="/" element={<MainLayout />}>
-              <Route path="todo" element={<TodoPage />} />
-              <Route path="profile" element={<ProfilePage />} />
-            </Route>
-          </Routes>
-        ) : (
-          <Routes>
-            <Route path="/" element={<Navigate to="/auth" replace />} />
-            <Route path="/auth" element={<AuthLayout />}>
-              <Route index element={<LogIn />} />
-              <Route path="register" element={<SignUpPage />} />
-            </Route>
-          </Routes>
-        )}
+        <Routes>
+          <Route path="/" element={<MainLayout />}>
+            <Route path="todo" element={<TodoPage />} />
+            <Route path="profile" element={<ProfilePage />} />
+          </Route>
+          <Route path="/auth" element={<AuthLayout />}>
+            <Route index element={<LogIn />} />
+            <Route path="register" element={<SignUpPage />} />
+          </Route>
+        </Routes>
       </BrowserRouter>
     </>
   );

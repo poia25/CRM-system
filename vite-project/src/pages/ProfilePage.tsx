@@ -3,11 +3,9 @@ import { ProfileRequest } from "../types/user.ts";
 import { getUpdateProfile, logoutUser } from "../store/actionCreators";
 import { useSelector } from "react-redux";
 import { RootState, useAppDispatch } from "../store/store";
-import { useNavigate } from "react-router";
 import { Button, Form, Input } from "antd";
 
 export const ProfilePage = () => {
-  const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const profile = useSelector(
     (state: RootState) => state.auth.profileData.profile
@@ -81,7 +79,7 @@ export const ProfilePage = () => {
             validateDebounce={1000}
             rules={[
               {
-                pattern: /^[1-9]\d{1,10}$/,
+                pattern: /^((8|\+7)[\- ]?)?(\(?\d{3}\)?[\- ]?)?[\d\- ]{7,10}$/,
                 message: "Неправильный формат телефона",
               },
             ]}
@@ -102,7 +100,6 @@ export const ProfilePage = () => {
           <Button
             onClick={() => {
               dispatch(logoutUser());
-              navigate("/auth");
             }}
           >
             ВЫЙТИ

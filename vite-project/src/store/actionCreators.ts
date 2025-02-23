@@ -9,13 +9,7 @@ import {
   loadProfileFailure,
   logoutSucces,
 } from "./authReducer";
-import {
-  loadProfile,
-  login,
-  logout,
-  refreshToken,
-  updateProfile,
-} from "../api/auth";
+import { loadProfile, login, logout, updateProfile } from "../api/auth";
 
 export const loginUser = (data: AuthData) => {
   return async (dispatch: Dispatch): Promise<void> => {
@@ -63,35 +57,6 @@ export const getUpdateProfile =
     }
   };
 
-let refreshTokenRequest: Promise<Token> | null = null;
-
-export const getNewAccessToken =
-  () =>
-  async (dispatch: Dispatch): Promise<string | null> => {
-    try {
-      dispatch(loginStart());
-      const currentRefreshToken: string | null =
-        localStorage.getItem("refreshToken");
-      if (refreshTokenRequest === null && currentRefreshToken) {
-        refreshTokenRequest = refreshToken(currentRefreshToken);
-      }
-
-      const res = await refreshTokenRequest;
-      refreshTokenRequest = null;
-
-      if (res) {
-        localStorage.setItem("accessToken", res.accessToken);
-        localStorage.setItem("refreshToken", res.refreshToken);
-        dispatch(loginSucces(res.accessToken));
-        return res.accessToken;
-      }
-      return null;
-    } catch (error: any) {
-      console.log("refresh error:", error);
-      throw error;
-    }
-  };
-
 export const logoutUser =
   () =>
   async (dispatch: Dispatch): Promise<void> => {
@@ -99,6 +64,7 @@ export const logoutUser =
       await logout();
       localStorage.clear();
       dispatch(logoutSucces());
+      window.location.href = "/auth";
     } catch (error) {
       console.log(error);
       throw error;

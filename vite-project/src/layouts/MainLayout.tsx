@@ -1,10 +1,15 @@
-import { Menu } from "antd";
-import { Link, Outlet } from "react-router-dom";
+import { Menu, Spin } from "antd";
+import { Link, Navigate, Outlet } from "react-router-dom";
 import type { MenuProps } from "antd";
+import TokenService from "../services/tokenServices";
+import { useSelector } from "react-redux";
+import { RootState } from "../store/store";
 
-
-
-const Sidebar = () => {
+const MainLayout = () => {
+  const token = TokenService.getRefreshToken();
+  const isLoading = useSelector(
+    (state: RootState) => state.auth.authData.isLoading
+  );
 
   const menuItems: MenuProps["items"] = [
     {
@@ -16,24 +21,30 @@ const Sidebar = () => {
       label: <Link to="/profile">Profile</Link>,
     },
   ];
-  return (
-    <>
-      <Menu
-      items={menuItems}
-        mode="vertical"
-        style={{
-          border: "1px solid #f0f0f0",
-          padding: "10px",
-          borderRadius: "5px",
-          backgroundColor: "#f0f0f0",
-          width: 200,
-          float: "left",
-        }}
-      />
-      <Outlet />
-      
-    </>
-  );
+  if (isLoading) {
+    return <Spin spinning fullscreen />;
+  }
+  if (token) {
+    return (
+      <>
+        <Menu
+          items={menuItems}
+          mode="vertical"
+          style={{
+            border: "1px solid #f0f0f0",
+            padding: "10px",
+            borderRadius: "5px",
+            backgroundColor: "#f0f0f0",
+            width: 200,
+            float: "left",
+          }}
+        />
+        <Outlet />
+      </>
+    );
+  } else {
+    return <Navigate to="/auth" />;
+  }
 };
 
-export default Sidebar;
+export default MainLayout;
