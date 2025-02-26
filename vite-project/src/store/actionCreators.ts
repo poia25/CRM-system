@@ -37,7 +37,7 @@ export const getProfile =
     try {
       dispatch(loadProfileStart());
       const res = await loadProfile();
-      dispatch(loadProfileSuccess(res!));
+      dispatch(loadProfileSuccess(res as Profile));
     } catch (error: any) {
       dispatch(loadProfileFailure(error.message));
       throw error;

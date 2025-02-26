@@ -34,29 +34,27 @@ axiosInstance.interceptors.request.use((config) => {
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
-    if (error.response?.status !== 401) {
-      return Promise.reject(error);
-    }
-    const refreshToken = TokenService.getRefreshToken();
-    if (!refreshToken) {
-      store.dispatch(logoutUser());
-      return Promise.reject(error);
-    }
+    const originalRequest = error.config;
+    if (error.response.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      try {
+        const refreshToken = TokenService.getRefreshToken();
+        const response = await authRefreshToken(refreshToken!);
+        TokenService.saveToken(response.accessToken);
+        localStorage.setItem("refreshToken", response.refreshToken);
 
-    try {
-      const response = await axios.post<Token>(
-        "https://easydev.club/api/v1/auth/refresh",
-        { refreshToken }
-      );
+        axiosInstance.defaults.headers.common[
+          "Authorization"
+        ] = `Bearer ${response.accessToken}`;
 
-      const newAccessToken = response.data.accessToken;
-
-      TokenService.saveToken(newAccessToken);
-      error.config.headers.Authorization = `Bearer ${newAccessToken}`;
-      return axiosInstance(error.config);
-    } catch (refreshError) {
-      return Promise.reject(refreshError);
+        return axiosInstance(originalRequest);
+      } catch (refreshError) {
+        console.log("Token refresh failed:", refreshError);
+        store.dispatch(logoutUser());
+        return Promise.reject(refreshError);
+      }
     }
+    return Promise.reject(error);
   }
 );
 
@@ -79,7 +77,9 @@ export const loadProfile = async (): Promise<Profile | null> => {
     throw error;
   }
 };
-export const refreshToken = async (refreshToken: string): Promise<Token> => {
+export const authRefreshToken = async (
+  refreshToken: string
+): Promise<Token> => {
   const response = await axios.post(
     "https://easydev.club/api/v1/auth/refresh",
     { refreshToken }

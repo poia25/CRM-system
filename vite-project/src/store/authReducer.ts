@@ -50,7 +50,7 @@ export const authReducer = createSlice({
     }),
     loadProfileStart: (state): AuthState => ({
       ...state,
-      profileData: { ...state.profileData, isLoading: true },
+      profileData: { ...state.profileData, isLoading:true },
     }),
     loadProfileSuccess: (state, action: PayloadAction<Profile>): AuthState => ({
       ...state,

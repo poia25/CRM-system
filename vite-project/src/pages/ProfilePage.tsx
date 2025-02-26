@@ -1,12 +1,18 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ProfileRequest } from "../types/user.ts";
 import { getUpdateProfile, logoutUser } from "../store/actionCreators";
 import { useSelector } from "react-redux";
 import { RootState, useAppDispatch } from "../store/store";
 import { Button, Form, Input } from "antd";
+import { useLocation } from "react-router";
+import { loadProfile } from "../api/auth.ts";
 
 export const ProfilePage = () => {
   const dispatch = useAppDispatch();
+  const location = useLocation()
+  useEffect(() => {
+   loadProfile()
+  },[location.pathname])
   const profile = useSelector(
     (state: RootState) => state.auth.profileData.profile
   );
