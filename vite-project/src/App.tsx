@@ -14,10 +14,10 @@ import TokenService from "./services/tokenServices.tsx";
 
 function App() {
   const dispatch = useAppDispatch();
-  useEffect(() => {    
-      if(TokenService.getRefreshToken()){
-        dispatch(getProfile())
-      }
+  useEffect(() => {
+    if (TokenService.getToken()) {
+      dispatch(getProfile());
+    }
   }, []);
 
   const isLoadingAuth = useSelector(

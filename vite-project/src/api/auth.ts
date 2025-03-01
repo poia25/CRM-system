@@ -7,8 +7,12 @@ import {
   ProfileRequest,
 } from "../types/user";
 import TokenService from "../services/tokenServices";
-import { logoutUser } from "../store/actionCreators";
+import {
+  getProfile,
+  logoutUser,
+} from "../store/actionCreators";
 import { store } from "../store/store";
+import { loginSucces } from "../store/authReducer";
 
 export const axiosInstancePublic = axios.create({
   baseURL: "https://easydev.club/api/v1",
@@ -39,18 +43,27 @@ axiosInstance.interceptors.response.use(
       originalRequest._retry = true;
       try {
         const refreshToken = TokenService.getRefreshToken();
-        const response = await authRefreshToken(refreshToken!);
-        TokenService.saveToken(response.accessToken);
-        localStorage.setItem("refreshToken", response.refreshToken);
 
-        axiosInstance.defaults.headers.common[
-          "Authorization"
-        ] = `Bearer ${response.accessToken}`;
+        if (refreshToken) {
+          const response = await authRefreshToken(refreshToken);
+          
+          TokenService.saveToken(response.accessToken);
+          store.dispatch(loginSucces(response.accessToken));
+
+          localStorage.setItem("refreshToken", response.refreshToken);
+
+          axiosInstance.defaults.headers.common[
+            "Authorization"
+          ] = `Bearer ${response.accessToken}`;
+          store.dispatch(getProfile());
+        }
 
         return axiosInstance(originalRequest);
       } catch (refreshError) {
         console.log("Token refresh failed:", refreshError);
-        store.dispatch(logoutUser());
+        if(!store.getState().auth.profileData.isLoading){
+          store.dispatch(logoutUser());
+        }
         return Promise.reject(refreshError);
       }
     }

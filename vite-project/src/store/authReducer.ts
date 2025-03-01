@@ -6,6 +6,7 @@ export interface AuthState {
     accessToken: string | null;
     isLoading: boolean;
     error: string | null;
+    isAuthorizated: boolean;
   };
   profileData: {
     profile: Profile | null;
@@ -19,6 +20,7 @@ const initialState: AuthState = {
     accessToken: null,
     isLoading: false,
     error: null,
+    isAuthorizated: false,
   },
   profileData: {
     profile: null,
@@ -41,6 +43,7 @@ export const authReducer = createSlice({
         ...state.authData,
         accessToken: action.payload,
         isLoading: false,
+        isAuthorizated: true,
         error: null,
       },
     }),
@@ -50,7 +53,7 @@ export const authReducer = createSlice({
     }),
     loadProfileStart: (state): AuthState => ({
       ...state,
-      profileData: { ...state.profileData, isLoading:true },
+      profileData: { ...state.profileData, isLoading: true },
     }),
     loadProfileSuccess: (state, action: PayloadAction<Profile>): AuthState => ({
       ...state,

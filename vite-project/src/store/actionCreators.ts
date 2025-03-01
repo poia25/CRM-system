@@ -9,7 +9,13 @@ import {
   loadProfileFailure,
   logoutSucces,
 } from "./authReducer";
-import { loadProfile, login, logout, updateProfile } from "../api/auth";
+import {
+  loadProfile,
+  login,
+  logout,
+  updateProfile,
+} from "../api/auth";
+import TokenService from "../services/tokenServices";
 
 export const loginUser = (data: AuthData) => {
   return async (dispatch: Dispatch): Promise<void> => {
@@ -19,7 +25,7 @@ export const loginUser = (data: AuthData) => {
       if (!res || !res.accessToken) {
         throw new Error("Отсутствует токен в ответе сервера");
       }
-      localStorage.setItem("accessToken", res.accessToken);
+      TokenService.saveToken(res.accessToken);
       localStorage.setItem("refreshToken", res.refreshToken);
 
       dispatch(loginSucces(res.accessToken));
@@ -37,12 +43,15 @@ export const getProfile =
     try {
       dispatch(loadProfileStart());
       const res = await loadProfile();
-      dispatch(loadProfileSuccess(res as Profile));
+      if (res) {
+        dispatch(loadProfileSuccess(res));
+      }
     } catch (error: any) {
       dispatch(loadProfileFailure(error.message));
       throw error;
     }
   };
+
 export const getUpdateProfile =
   (values: ProfileRequest) =>
   async (dispatch: Dispatch): Promise<void> => {
@@ -63,6 +72,7 @@ export const logoutUser =
     try {
       await logout();
       localStorage.clear();
+      TokenService.deleteToken();
       dispatch(logoutSucces());
       window.location.href = "/auth";
     } catch (error) {

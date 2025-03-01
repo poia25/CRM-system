@@ -1,4 +1,4 @@
-import { Flex, Form, Input, Button, Space } from "antd";
+import { Flex, Form, Input, Button, Space, message } from "antd";
 import { Typography } from "antd";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { AuthData } from "../types/user";
@@ -18,16 +18,14 @@ export const LogIn: React.FC = () => {
       await dispatch(loginUser(values));
       navigate("/todo");
     } catch (error) {
-    alert('Неверные логин или пароль')
+    message.error("Неверный Логин или Пароль")
       throw error;
     }
   };
 
-  const isLogged = useSelector(
-    (state: RootState) => !!state.auth.profileData.profile
-  );
+  const isLogin = useSelector((state: RootState) => state.auth.authData.isAuthorizated);
 
-  return isLogged ? (
+  return isLogin ? (
     <Navigate to="/todo" replace />
   ) : (
     <>
