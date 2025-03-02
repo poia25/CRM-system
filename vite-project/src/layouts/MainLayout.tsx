@@ -7,8 +7,7 @@ import { RootState } from "../store/store";
 
 const MainLayout = () => {
   const token = TokenService.getRefreshToken();
-  const isLogin = useSelector((state: RootState) => state.auth.authData.isAuthorizated);
-  console.log(isLogin)
+  // const isLogin = useSelector((state: RootState) => state.auth.authData.isAuthorizated);
   const isLoading = useSelector(
     (state: RootState) => state.auth.authData.isLoading
   );

@@ -35,7 +35,7 @@ export const authReducer = createSlice({
   reducers: {
     loginStart: (state): AuthState => ({
       ...state,
-      authData: { ...state.authData, isLoading: true },
+      authData: { ...state.authData, isLoading: true,isAuthorizated:false },
     }),
     loginSucces: (state, action: PayloadAction<string>): AuthState => ({
       ...state,
@@ -49,11 +49,12 @@ export const authReducer = createSlice({
     }),
     loginFailure: (state, action: PayloadAction<string>): AuthState => ({
       ...state,
-      authData: { ...state.authData, isLoading: false, error: action.payload },
+      authData: { ...state.authData, isLoading: false, error: action.payload,isAuthorizated:false },
     }),
     loadProfileStart: (state): AuthState => ({
       ...state,
       profileData: { ...state.profileData, isLoading: true },
+      authData:{...state.authData, isAuthorizated:true}
     }),
     loadProfileSuccess: (state, action: PayloadAction<Profile>): AuthState => ({
       ...state,
@@ -63,6 +64,7 @@ export const authReducer = createSlice({
         isLoading: false,
         error: null,
       },
+      authData:{...state.authData, isAuthorizated:true}
     }),
     loadProfileFailure: (state, action: PayloadAction<string>): AuthState => ({
       ...state,

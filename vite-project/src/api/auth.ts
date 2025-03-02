@@ -61,8 +61,8 @@ axiosInstance.interceptors.response.use(
         return axiosInstance(originalRequest);
       } catch (refreshError) {
         console.log("Token refresh failed:", refreshError);
-        if(!store.getState().auth.profileData.isLoading){
-          store.dispatch(logoutUser());
+        if(!store.getState().auth.authData.isAuthorizated){
+        store.dispatch(logoutUser())
         }
         return Promise.reject(refreshError);
       }
