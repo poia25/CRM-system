@@ -7,7 +7,7 @@ import { RootState } from "../store/store";
 
 const MainLayout = () => {
   const token = TokenService.getRefreshToken();
-  // const isLogin = useSelector((state: RootState) => state.auth.authData.isAuthorizated);
+  const isLogin = useSelector((state: RootState) => state.auth.authData.isAuthorizated);
   const isLoading = useSelector(
     (state: RootState) => state.auth.authData.isLoading
   );
@@ -25,7 +25,7 @@ const MainLayout = () => {
   if (isLoading) {
     return <Spin spinning fullscreen />;
   }
-  if (token) {
+  if (isLogin) {
     return (
       <>
         <Menu
