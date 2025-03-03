@@ -1,12 +1,10 @@
 import { Menu, Spin } from "antd";
 import { Link, Navigate, Outlet } from "react-router-dom";
 import type { MenuProps } from "antd";
-import TokenService from "../services/tokenServices";
 import { useSelector } from "react-redux";
 import { RootState } from "../store/store";
 
 const MainLayout = () => {
-  const token = TokenService.getRefreshToken();
   const isLogin = useSelector((state: RootState) => state.auth.authData.isAuthorizated);
   const isLoading = useSelector(
     (state: RootState) => state.auth.authData.isLoading
