@@ -20,7 +20,7 @@ const initialState: AuthState = {
     accessToken: null,
     isLoading: false,
     error: null,
-    isAuthorizated: false,
+    isAuthorizated: localStorage.getItem('isAuthorizated') === 'true',
   },
   profileData: {
     profile: null,
@@ -29,32 +29,36 @@ const initialState: AuthState = {
   },
 };
 
+
 export const authReducer = createSlice({
   name: "auth",
   initialState,
   reducers: {
     loginStart: (state): AuthState => ({
       ...state,
-      authData: { ...state.authData, isLoading: true,isAuthorizated:false },
+      authData: { ...state.authData, isLoading: true,},
+      
     }),
-    loginSucces: (state, action: PayloadAction<string>): AuthState => ({
-      ...state,
-      authData: {
-        ...state.authData,
-        accessToken: action.payload,
-        isLoading: false,
-        isAuthorizated: true,
-        error: null,
-      },
-    }),
+    loginSucces: (state, action: PayloadAction<string>): AuthState => {
+      localStorage.setItem('isAuthorizated', 'true');
+      return{
+        ...state,
+        authData: {
+          ...state.authData,
+          accessToken:action.payload,
+          isLoading: false,
+          isAuthorizated: true,
+          error: null,
+        },
+      }
+    },
     loginFailure: (state, action: PayloadAction<string>): AuthState => ({
       ...state,
-      authData: { ...state.authData, isLoading: false, error: action.payload,isAuthorizated:false },
+      authData: { ...state.authData, isLoading: false, error: action.payload},
     }),
     loadProfileStart: (state): AuthState => ({
       ...state,
       profileData: { ...state.profileData, isLoading: true },
-      authData:{...state.authData, isAuthorizated:true}
     }),
     loadProfileSuccess: (state, action: PayloadAction<Profile>): AuthState => ({
       ...state,
@@ -64,13 +68,15 @@ export const authReducer = createSlice({
         isLoading: false,
         error: null,
       },
-      authData:{...state.authData, isAuthorizated:true}
     }),
     loadProfileFailure: (state, action: PayloadAction<string>): AuthState => ({
       ...state,
       profileData: { profile: null, isLoading: false, error: action.payload },
     }),
-    logoutSucces: (): AuthState => initialState,
+    logoutSucces: (): AuthState => {
+      localStorage.removeItem('isAuthorizated');
+      return initialState;
+    },
   },
 });
 

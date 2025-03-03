@@ -70,10 +70,10 @@ export const logoutUser =
   () =>
   async (dispatch: Dispatch): Promise<void> => {
     try {
-      await logout();
       localStorage.clear();
       TokenService.deleteToken();
       dispatch(logoutSucces());
+      await logout();
       window.location.href = "/auth";
     } catch (error) {
       console.log(error);
