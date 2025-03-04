@@ -12,7 +12,7 @@ import {
   logoutUser,
 } from "../store/actionCreators";
 import { store } from "../store/store";
-import { loginSucces } from "../store/authReducer";
+import { loginSucces, logoutSucces } from "../store/authReducer";
 
 export const axiosInstancePublic = axios.create({
   baseURL: "https://easydev.club/api/v1",
@@ -40,12 +40,17 @@ axiosInstance.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
     if (error.response.status === 401 && !originalRequest._retry) {
+      console.log(1)
       originalRequest._retry = true;
+      console.log(2)
       try {
+        console.log(3)
         const refreshToken = TokenService.getRefreshToken();
-
+        console.log(4)
+        
         if (refreshToken) {
           const response = await authRefreshToken(refreshToken);
+          console.log(5)
           
           TokenService.saveToken(response.accessToken);
           store.dispatch(loginSucces(response.accessToken));
@@ -56,12 +61,19 @@ axiosInstance.interceptors.response.use(
             "Authorization"
           ] = `Bearer ${response.accessToken}`;
           store.dispatch(getProfile());
+        }else{
+          localStorage.clear();
+          TokenService.deleteToken();
+          store.dispatch(logoutSucces());
+          window.location.href = "/auth";
         }
 
         return axiosInstance(originalRequest);
       } catch (refreshError) {
         console.log("Token refresh failed:", refreshError);
+        console.log('EXIT')
         store.dispatch(logoutUser())
+
         
         return Promise.reject(refreshError);
       }
