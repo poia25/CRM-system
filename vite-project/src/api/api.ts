@@ -28,10 +28,10 @@ export const deleteTask = async (id: number) => {
   }
 };
 
-export const editTask = async (id: number, isDone: boolean) => {
+export const editCheckBox = async (id: number, isDone: boolean) => {
   try {
     const payload = {
-      isDone: !isDone,
+      isDone: isDone,
     };
     const response = await axiosInstance.put(`/todos/${id}`, payload);
     return response.data;
@@ -43,8 +43,8 @@ export const editTask = async (id: number, isDone: boolean) => {
 
 export const fetchTodos = async (status: TodoStatus) => {
   try {
-    const response = await axiosInstance.get(`/todos`,{
-      params: {filter:status} 
+    const response = await axiosInstance.get(`/todos`, {
+      params: { filter: status },
     });
     return response.data;
   } catch (error) {

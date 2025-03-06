@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { TodoInfo, TodoStatus, Todo } from "../types/todo.ts";
 import { fetchTodos } from "../api/api.ts";
 import TodoForm from "../components/Form/TodoForm.tsx";
@@ -15,18 +15,20 @@ function TodoPage() {
   const [activeTab, setActiveTab] = useState<TodoStatus>(TodoStatus.All);
   const prevDataRef = useRef();
 
-  const loadTodos = async () => {
+  const loadTodos = useCallback(async () => {
     const response = await fetchTodos(activeTab);
     if (response) {
-      if (JSON.stringify(response.data) !== JSON.stringify(prevDataRef.current)) {
-        setInfo(response.info);
-        setData(response.data);
-        prevDataRef.current = response.data; // Обновляем предыдущие данные
+      if (
+        JSON.stringify(response.data) === JSON.stringify(prevDataRef.current)
+      ) {
+        return;
       }
-    }
-  }; 
 
-  const memoizedData = useMemo(() => data, [data]);
+      setInfo(response.info);
+      setData(response.data);
+      prevDataRef.current = response.data;
+    }
+  }, [activeTab, data]);
 
   useEffect(() => {
     loadTodos();
@@ -39,8 +41,8 @@ function TodoPage() {
     <>
       <div className="App">
         <TodoForm loadTodos={loadTodos} />
-        <Tabs info={info} activeTab={activeTab} setActiveTab={setActiveTab}/>
-        <TodoList todos={memoizedData} loadTodos={loadTodos} />
+        <Tabs info={info} activeTab={activeTab} setActiveTab={setActiveTab} />
+        <TodoList todos={data} loadTodos={loadTodos} />
       </div>
     </>
   );

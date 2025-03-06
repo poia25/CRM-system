@@ -1,10 +1,10 @@
 import { Menu } from "antd";
-import { Link } from "react-router-dom";
+import { Link, Outlet } from "react-router-dom";
 import type { MenuProps } from "antd";
 
 
 
-const Sidebar = () => {
+const MainMenu = () => {
 
   const menuItems: MenuProps["items"] = [
     {
@@ -30,9 +30,9 @@ const Sidebar = () => {
           float: "left",
         }}
       />
-      
+      <Outlet />
     </>
   );
 };
 
-export default Sidebar;
+export default MainMenu;
