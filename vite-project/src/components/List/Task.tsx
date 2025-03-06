@@ -45,6 +45,11 @@ const Task: React.FC<TaskProps> = ({ todo, loadTodos }) => {
       console.error("Не удалось обновить задачу:", error);
     }
   };
+  
+  const handleCloseEditing = () => {
+    setEditId(false);
+    form.resetFields()
+  }
 
   return (
     <>
@@ -72,7 +77,7 @@ const Task: React.FC<TaskProps> = ({ todo, loadTodos }) => {
             >
               <Input />
             </Form.Item>
-            <Button onClick={() => setEditId(false)} type="primary" danger>
+            <Button onClick={handleCloseEditing} type="primary" danger>
               Отмена
             </Button>
             <Button htmlType="submit" type="primary">
