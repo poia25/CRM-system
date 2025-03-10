@@ -5,7 +5,6 @@ import { Todo } from "../../types/todo";
 import { useState } from "react";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 
-<<<<<<< HEAD
 const { Text } = Typography;
 
 export interface TaskProps {
@@ -27,32 +26,6 @@ const Task: React.FC<TaskProps> = ({ todo, loadTodos }) => {
       console.error("Error updating the task:", error);
     }
   };
-
-=======
-interface TaskProps {
-  todo: Todo;
-  data: Todo[];
-  loadTodos: () => void;
-  startEditing: (id: number, currentTitle: string) => void;
-  editTitle: string;
-  editId: number | null;
-  setEditTitle: (title: string) => void;
-  finishEditing: (id: number, title: string) => void;
-  closeEdeting: () => void;
-}
-
-const Task: React.FC<TaskProps> = ({
-  todo,
-  data,
-  loadTodos,
-  startEditing,
-  editTitle,
-  editId,
-  setEditTitle,
-  finishEditing,
-  closeEdeting,
-}) => {
->>>>>>> bc0aca1b8a114f6ce7f2a8d9c4cef13ce3d90190
   const handleDeleteTask = async (id: number) => {
     try {
       await deleteTask(id);
@@ -64,11 +37,7 @@ const Task: React.FC<TaskProps> = ({
 
   const toogleTask = async (id: number, task: Todo) => {
     try {
-<<<<<<< HEAD
       await editCheckBox(id, !task.isDone);
-=======
-      await EditingTask(id, task.isDone);
->>>>>>> bc0aca1b8a114f6ce7f2a8d9c4cef13ce3d90190
       await loadTodos();
     } catch (error) {
       console.error("Не удалось обновить задачу:", error);
@@ -82,7 +51,6 @@ const Task: React.FC<TaskProps> = ({
 
   return (
     <>
-<<<<<<< HEAD
       {isEditId ? (
         <Form
           form={form}
@@ -124,45 +92,12 @@ const Task: React.FC<TaskProps> = ({
               className={styles.input}
             />
             <Text
-=======
-      {editId === todo.id ? (
-        <>
-          <input
-            className={styles.change}
-            type="text"
-            value={editTitle}
-            onChange={(e) => setEditTitle(e.target.value)}
-          />
-          <div className={styles.actions_2}>
-            <button onClick={closeEdeting} className={styles.btn1}>
-              Отмена
-            </button>
-            <button
-              className={styles.btn2}
-              onClick={() => finishEditing(editId, editTitle)}
-            >
-              Сохранить
-            </button>
-          </div>
-        </>
-      ) : (
-        <>
-          <div>
-            <input
-              type="checkbox"
-              checked={todo.isDone}
-              onChange={() => toogleTask(todo.id)}
-              className={styles.input}
-            />
-            <span
->>>>>>> bc0aca1b8a114f6ce7f2a8d9c4cef13ce3d90190
               style={{
                 textDecoration: todo.isDone ? "line-through" : "none",
                 color: todo.isDone ? "#a8a8a8" : "black",
               }}
             >
               {todo.title}
-<<<<<<< HEAD
             </Text>
           </Space>
 
@@ -179,28 +114,6 @@ const Task: React.FC<TaskProps> = ({
               onClick={() => handleDeleteTask(todo.id)}
               icon={<DeleteOutlined />}
             />
-=======
-            </span>
-          </div>
-
-          <div className={styles.actions}>
-            <button
-              className={styles.edit}
-              onClick={() => startEditing(todo.id, todo.title)}
-            >
-              <FontAwesomeIcon icon={faEdit} />
-            </button>
-            <button
-              className="btn"
-              onClick={() => handleDeleteTask(todo.id)}
-              style={{ backgroundColor: "red" }}
-            >
-              <FontAwesomeIcon
-                icon={faTrash}
-                style={{ color: "white", height: "12px" }}
-              />
-            </button>
->>>>>>> bc0aca1b8a114f6ce7f2a8d9c4cef13ce3d90190
           </div>
         </>
       )}
