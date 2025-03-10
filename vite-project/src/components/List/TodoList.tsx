@@ -1,15 +1,27 @@
-import { useState } from "react";
-import { Todo } from "../../types/todo.ts";
+import React from "react";
 import Task from "./Task.tsx";
-import { updateTask } from "../../api/api.ts";
-import styles from "./List.module.css";
+import { Todo } from "../../types/todo.ts";
+import { List } from "antd";
 
 interface TodoListProps {
   todos: Todo[];
-  setData: React.Dispatch<React.SetStateAction<Todo[]>>;
   loadTodos: () => void;
 }
 
+<<<<<<< HEAD
+const TodoList: React.FC<TodoListProps> = React.memo(({ todos, loadTodos }) => {
+  return (
+    <div>
+      <List
+        dataSource={todos}
+        size="large"
+        renderItem={(todo) => (
+          <List.Item>
+            <Task todo={todo} loadTodos={loadTodos} />
+          </List.Item>
+        )}
+      />
+=======
 const TodoList: React.FC<TodoListProps> = ({ todos, loadTodos }) => {
   const [editId, setEditId] = useState<number | null>(null);
   const [editTitle, setEditTitle] = useState<string>("");
@@ -51,8 +63,9 @@ const TodoList: React.FC<TodoListProps> = ({ todos, loadTodos }) => {
           </li>
         ))}
       </ul>
+>>>>>>> bc0aca1b8a114f6ce7f2a8d9c4cef13ce3d90190
     </div>
   );
-};
+});
 
 export default TodoList;

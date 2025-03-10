@@ -12,40 +12,6 @@
   margin: 10px 0;
   border-radius: 8px;
 }
-
-.input[type="checkbox"] {
-  appearance: none;
-  -webkit-appearance: none;
-  width: 20px;
-  height: 20px;
-  border: 2px solid #ccc;
-  border-radius: 50%;
-  background-color: white;
-  cursor: pointer;
-  transition: background-color 0.3s ease, border-color 0.3s ease;
-  margin-right: 20px;
-  vertical-align: middle;
-}
-
-.input[type="checkbox"]:checked {
-  background-color: #0078ff;
-  border-color: #0078ff;
-  position: relative;
-}
-
-.input[type="checkbox"]:checked::after {
-  content: "✔";
-  font-size: 12px;
-  color: white;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-.task span {
-  vertical-align: middle;
-  font-size: 20px;
-}
 .actions {
   display: flex;
   gap: 10px;
@@ -55,40 +21,5 @@
   height: 35px;
   border-radius: 5px;
   border: none;
-  cursor: pointer;
-}
-
-.edit {
-  background-color: #4285f4;
-  color: #fff;
-}
-
-.change {
-  outline: none;
-  border: #fff;
-  padding: 10px;
-  border-bottom: 1.5px solid #adadad;
-  background-color: #fff;
-  width: 40%;
-}
-
-.actions_2 {
-  display: flex;
-  gap: 10px;
-}
-.btn1 {
-  background-color: red;
-  border: none;
-  border-radius: 5px;
-  color: white;
-  padding: 8px;
-  cursor: pointer;
-}
-.btn2 {
-  background-color: #4285f4;
-  border: none;
-  border-radius: 5px;
-  color: white;
-  padding: 8px;
   cursor: pointer;
 }
