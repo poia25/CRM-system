@@ -14,14 +14,14 @@ export interface TaskProps {
 
 const Task: React.FC<TaskProps> = ({ todo, loadTodos }) => {
   const [form] = Form.useForm();
-  const [editId, setEditId] = useState<boolean>(false);
+  const [isEditId, setIsEditId] = useState<boolean>(false);
 
-  const finishEditing = async (id: number) => {
+  const finishEditing = async () => {
     const valuesInput = form.getFieldsValue();
     try {
-      await updateTask(id, { title: valuesInput.title });
+      await updateTask(todo.id, { title: valuesInput.title });
       await loadTodos();
-      setEditId(false);
+      setIsEditId(false);
     } catch (error) {
       console.error("Error updating the task:", error);
     }
@@ -38,8 +38,7 @@ const Task: React.FC<TaskProps> = ({ todo, loadTodos }) => {
 
   const toogleTask = async (id: number, task: Todo) => {
     try {
-      const unDone = !task.isDone;
-      await editCheckBox(id, unDone);
+      await editCheckBox(id, !task.isDone);
       await loadTodos();
     } catch (error) {
       console.error("Не удалось обновить задачу:", error);
@@ -47,17 +46,17 @@ const Task: React.FC<TaskProps> = ({ todo, loadTodos }) => {
   };
   
   const handleCloseEditing = () => {
-    setEditId(false);
+    setIsEditId(false);
     form.resetFields()
   }
 
   return (
     <>
-      {editId ? (
+      {isEditId ? (
         <Form
           form={form}
           initialValues={{ title: todo.title }}
-          onFinish={() => finishEditing(todo.id)}
+          onFinish={finishEditing}
         >
           <Space>
             <Form.Item
@@ -107,7 +106,7 @@ const Task: React.FC<TaskProps> = ({ todo, loadTodos }) => {
             <Button
               type="primary"
               icon={<EditOutlined />}
-              onClick={() => setEditId(true)}
+              onClick={() => setIsEditId(true)}
             />
 
             <Button

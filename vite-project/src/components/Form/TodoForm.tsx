@@ -1,3 +1,4 @@
+import React from "react";
 import { addTask } from "../../api/api";
 import { Button, Form, Input } from "antd";
 
@@ -5,7 +6,7 @@ export interface TodoFormProps {
   loadTodos: () => void;
 }
 
-const TodoForm: React.FC<TodoFormProps> = ({ loadTodos }) => {
+const TodoForm: React.FC<TodoFormProps> = React.memo(({ loadTodos }) => {
   const [form] = Form.useForm();
 
   const handleAddTask = async (values: { task: string }) => {
@@ -39,6 +40,6 @@ const TodoForm: React.FC<TodoFormProps> = ({ loadTodos }) => {
       </Form>
     </>
   );
-};
+});
 
 export default TodoForm;
