@@ -8,22 +8,20 @@ import { loadProfile } from "../api/auth.ts";
 
 export const ProfilePage = () => {
   const dispatch = useAppDispatch();
-  useEffect(() => {
-    loadProfile();
-  }, []);
   const profile = useSelector(
     (state: RootState) => state.auth.profileData.profile
   );
-  const [edit, setEdit] = useState(false);
+  const [isEdit, setIsEdit] = useState(false);
   const [form] = Form.useForm();
-
+  
   const onFinishHandler = (values: ProfileRequest) => {
     if (
-      values.email === profile?.email &&
+      values.email === profile?.email ||
       values.username === profile?.username
     ) {
-      setEdit(false);
-      return null;
+      setIsEdit(false);
+      form.resetFields()
+      return;
     }
     try {
       dispatch(getUpdateProfile(values));
@@ -32,9 +30,18 @@ export const ProfilePage = () => {
     }
   };
 
+  const handleCloseEditing = () => {
+    setIsEdit(false);
+    form.resetFields()
+  }
+
+  useEffect(() => {
+    loadProfile();
+  }, []);
+
   return (
     <>
-      {edit ? (
+      {isEdit ? (
         <Form
           initialValues={{
             username: profile?.username,
@@ -44,6 +51,7 @@ export const ProfilePage = () => {
           onFinish={onFinishHandler}
           form={form}
         >
+          
           <Form.Item
             name="username"
             label="Имя пользователя"
@@ -91,7 +99,7 @@ export const ProfilePage = () => {
             <Input addonBefore="+7" maxLength={10} style={{ width: "100%" }} />
           </Form.Item>
           <Button htmlType="submit">Сохранить</Button>
-          <Button onClick={() => setEdit(false)}>Отмена</Button>
+          <Button onClick={handleCloseEditing}>Отмена</Button>
         </Form>
       ) : (
         <>
@@ -100,7 +108,7 @@ export const ProfilePage = () => {
             <li>Почтовый адрес: {profile?.email}</li>
             <li>Телефон:+7{profile?.phoneNumber.slice(1)}</li>
           </ul>
-          <Button onClick={() => setEdit(true)}>Редактировать</Button>
+          <Button onClick={() => setIsEdit(true)}>Редактировать</Button>
           <Button
             onClick={() => {
               dispatch(logoutUser());

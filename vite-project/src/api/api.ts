@@ -1,12 +1,5 @@
 import { TodoStatus, TodoRequest } from "../types/todo.ts";
-import axios from "axios";
-
-const axiosInstance = axios.create({
-  baseURL: "https://easydev.club/api/v1",
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
+import { axiosInstance } from "./auth.ts";
 
 export async function addTask(task: TodoRequest) {
   try {
@@ -49,7 +42,6 @@ export const fetchTodos = async (status: TodoStatus) => {
     return response.data;
   } catch (error) {
     console.error("Данные не загруженны", error);
-    return null;
   }
 };
 

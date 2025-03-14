@@ -2,7 +2,7 @@ import { Menu, Spin } from "antd";
 import { Link, Navigate, Outlet } from "react-router-dom";
 import type { MenuProps } from "antd";
 import { useSelector } from "react-redux";
-import { RootState } from "../store/store";
+import { RootState,  } from "../store/store";
 
 const MainLayout = () => {
   const isLogin = useSelector((state: RootState) => state.auth.authData.isAuthorizated);

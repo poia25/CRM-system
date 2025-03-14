@@ -5,21 +5,11 @@ import MainLayout from "./layouts/MainLayout.tsx";
 import LogIn from "./pages/LogIn.tsx";
 import SignUpPage from "./pages/SignUpPage.tsx";
 import { AuthLayout } from "./layouts/AuthLayouts.tsx";
-import { useAppDispatch, RootState } from "./store/store.ts";
-import { useEffect } from "react";
-import { getProfile } from "./store/actionCreators.ts";
+import { RootState } from "./store/store.ts";
 import { useSelector } from "react-redux";
 import { Spin } from "antd";
-import TokenService from "./services/tokenServices.tsx";
 
 function App() {
-  const dispatch = useAppDispatch();
-  useEffect(() => {
-    if (TokenService.getToken()) {
-      dispatch(getProfile());
-    }
-  }, []);
-
   const isLoadingAuth = useSelector(
     (state: RootState) => !!state.auth.authData.isLoading
   );
