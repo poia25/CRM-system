@@ -20,7 +20,7 @@ const initialState: AuthState = {
     accessToken: null,
     isLoading: false,
     error: null,
-    isAuthorizated: localStorage.getItem('isAuthorizated') === 'true',
+    isAuthorizated: false,
   },
   profileData: {
     profile: null,
@@ -40,7 +40,6 @@ export const authReducer = createSlice({
       
     }),
     loginSucces: (state, action: PayloadAction<string>): AuthState => {
-      localStorage.setItem('isAuthorizated', 'true');
       return{
         ...state,
         authData: {
@@ -74,7 +73,6 @@ export const authReducer = createSlice({
       profileData: { profile: null, isLoading: false, error: action.payload },
     }),
     logoutSucces: (): AuthState => {
-      localStorage.removeItem('isAuthorizated');
       return initialState;
     },
   },
