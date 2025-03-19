@@ -38,21 +38,11 @@ axiosInstance.interceptors.response.use(
     const originalRequest = error.config;
     if (error.response.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
-
       try {
         const refreshToken = TokenService.getRefreshToken();
 
         if (refreshToken) {
-          const response = await authRefreshToken(refreshToken);
-
-          TokenService.saveToken(response.accessToken);
-          store.dispatch(loginSucces(response.accessToken));
-
-          localStorage.setItem("refreshToken", response.refreshToken);
-
-          axiosInstance.defaults.headers.common[
-            "Authorization"
-          ] = `Bearer ${response.accessToken}`;
+          promiseRefreshToken();
           store.dispatch(getProfile());
         } else {
           localStorage.clear();
@@ -73,6 +63,22 @@ axiosInstance.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+export const promiseRefreshToken = async () => {
+  let refreshToken = TokenService.getRefreshToken();
+  if (refreshToken) {
+    const response = await authRefreshToken(refreshToken);
+
+    TokenService.saveToken(response.accessToken);
+    store.dispatch(loginSucces(response.accessToken));
+
+    localStorage.setItem("refreshToken", response.refreshToken);
+
+    axiosInstance.defaults.headers.common[
+      "Authorization"
+    ] = `Bearer ${response.accessToken}`;
+  }
+};
 
 export const userRegistr = async (
   userData: UserRegistration

@@ -9,12 +9,7 @@ import {
   loadProfileFailure,
   logoutSucces,
 } from "./authReducer";
-import {
-  loadProfile,
-  login,
-  logout,
-  updateProfile,
-} from "../api/auth";
+import { loadProfile, login, logout, updateProfile } from "../api/auth";
 import TokenService from "../services/tokenServices";
 
 export const loginUser = (data: AuthData) => {

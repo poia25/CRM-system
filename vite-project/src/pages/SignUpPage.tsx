@@ -9,9 +9,12 @@ export const SignUpPage = () => {
   const [form] = Form.useForm();
 
   const onFinishHandler = async (values: UserRegistration) => {
+    console.log(values)
     if(values.phoneNumber === ""){
       values.phoneNumber = "+"
     } 
+    values.phoneNumber = `+${values.phoneNumber}`
+    console.log(values)
     try {
       await userRegistr({ ...values});
       console.log(values.phoneNumber,values)

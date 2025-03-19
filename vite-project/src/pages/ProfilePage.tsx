@@ -5,11 +5,15 @@ import { useSelector } from "react-redux";
 import { RootState, useAppDispatch } from "../store/store";
 import { Button, Form, Input } from "antd";
 import { loadProfile } from "../api/auth.ts";
+import { loadProfileSuccess } from "../store/authReducer.ts";
 
 export const ProfilePage = () => {
   const dispatch = useAppDispatch();
   const profile = useSelector(
     (state: RootState) => state.auth.profileData.profile
+  );
+  const isLogin = useSelector(
+    (state: RootState) => state.auth.authData.isAuthorizated
   );
   const [isEdit, setIsEdit] = useState(false);
   const [form] = Form.useForm();
@@ -36,8 +40,15 @@ export const ProfilePage = () => {
   }
 
   useEffect(() => {
-    loadProfile();
-  }, []);
+    const loadProfileProg = async () => {
+      loadProfile()
+      let res = await loadProfile();
+      if(res){
+        dispatch(loadProfileSuccess(res));
+      }
+    } 
+    loadProfileProg()
+  }, [isLogin]);
 
   return (
     <>

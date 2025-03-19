@@ -1,16 +1,21 @@
 import { Menu, Spin } from "antd";
 import { Link, Navigate, Outlet } from "react-router-dom";
 import type { MenuProps } from "antd";
-import { useSelector } from "react-redux";
-import { RootState,  } from "../store/store";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "../store/store";
 import TokenService from "../services/tokenServices";
+import { useEffect } from "react";
+import { promiseRefreshToken } from "../api/auth";
 
 const MainLayout = () => {
-  const ref = TokenService.getRefreshToken() // а это местный мастхев получается
-  // const isLogin = useSelector((state: RootState) => state.auth.authData.isAuthorizated); от нее нет толка тут тк первое что делается при обновление страницы это isLogin = false
+  const ref = TokenService.getRefreshToken();
+  const isLogin = useSelector(
+    (state: RootState) => state.auth.authData.isAuthorizated
+  );
   const isLoading = useSelector(
     (state: RootState) => state.auth.authData.isLoading
   );
+  const dispatch = useDispatch();
 
   const menuItems: MenuProps["items"] = [
     {
@@ -22,10 +27,24 @@ const MainLayout = () => {
       label: <Link to="/profile">Profile</Link>,
     },
   ];
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      if (ref) {
+        try {
+          promiseRefreshToken();
+        } catch (error) {
+          console.error("Failed to refresh token:", error);
+        }
+      }
+    };
+    checkAuth();
+  }, [dispatch]);
+
   if (isLoading) {
     return <Spin spinning fullscreen />;
   }
-  if (ref) {
+  if (isLogin) {
     return (
       <>
         <Menu
