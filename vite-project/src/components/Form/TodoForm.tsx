@@ -1,16 +1,22 @@
+import React from "react";
 import { addTask } from "../../api/api";
 import { Button, Form, Input } from "antd";
-interface TodoFormProps {
+
+export interface TodoFormProps {
   loadTodos: () => void;
 }
 
-const TodoForm: React.FC<TodoFormProps> = ({ loadTodos }) => {
+const TodoForm: React.FC<TodoFormProps> = React.memo(({ loadTodos }) => {
   const [form] = Form.useForm();
 
   const handleAddTask = async (values: { task: string }) => {
-    await addTask({ title: values.task, isDone: false });
-    await loadTodos();
-    form.resetFields();
+    try {
+      await addTask({ title: values.task, isDone: false });
+      await loadTodos();
+      form.resetFields();
+    }catch(error) {
+      console.log("Проблемы формы",error)
+    }
   };
 
   return (
@@ -25,18 +31,16 @@ const TodoForm: React.FC<TodoFormProps> = ({ loadTodos }) => {
               { max: 64, message: "Input cannot exceed 64 characters!" },
             ]}
           >
-            <Input
-              placeholder="Add a new task"
-              style={{ width: "300px" }}
-            ></Input>
+            <Input placeholder="Add a new task" style={{ width: "300px" }} />
           </Form.Item>
           <Button htmlType="submit" type="primary" size="middle">
             Add
           </Button>
         </div>
       </Form>
+
     </>
   );
-};
+});
 
 export default TodoForm;

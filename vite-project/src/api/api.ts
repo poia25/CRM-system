@@ -1,5 +1,12 @@
 import { TodoStatus, TodoRequest } from "../types/todo.ts";
-import { axiosInstance } from "./auth.ts";
+import axios from "axios";
+
+const axiosInstance = axios.create({
+  baseURL: "https://easydev.club/api/v1",
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
 
 export async function addTask(task: TodoRequest) {
   try {
@@ -21,10 +28,10 @@ export const deleteTask = async (id: number) => {
   }
 };
 
-export const editTask = async (id: number, isDone: boolean) => {
+export const editCheckBox = async (id: number, isDone: boolean) => {
   try {
     const payload = {
-      isDone: !isDone,
+      isDone: isDone,
     };
     const response = await axiosInstance.put(`/todos/${id}`, payload);
     return response.data;
@@ -36,12 +43,13 @@ export const editTask = async (id: number, isDone: boolean) => {
 
 export const fetchTodos = async (status: TodoStatus) => {
   try {
-    const response = await axiosInstance.get(`/todos`,{
-      params: {filter:status} 
+    const response = await axiosInstance.get(`/todos`, {
+      params: { filter: status },
     });
     return response.data;
   } catch (error) {
     console.error("Данные не загруженны", error);
+    return null;
   }
 };
 
@@ -58,3 +66,4 @@ export const updateTask = async (id: number, updatedData: TodoRequest) => {
     return null;
   }
 };
+

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { TodoInfo, TodoStatus, Todo } from "../types/todo.ts";
 import { fetchTodos } from "../api/api.ts";
 import TodoForm from "../components/Form/TodoForm.tsx";
@@ -13,14 +13,22 @@ function TodoPage() {
     inWork: 0,
   });
   const [activeTab, setActiveTab] = useState<TodoStatus>(TodoStatus.All);
+  const prevDataRef = useRef();
 
-  const loadTodos = async () => {
+  const loadTodos = useCallback(async () => {
     const response = await fetchTodos(activeTab);
     if (response) {
-      setInfo(response.info || null);
+      if (
+        JSON.stringify(response.data) === JSON.stringify(prevDataRef.current)
+      ) {
+        return;
+      }
+
+      setInfo(response.info);
       setData(response.data);
+      prevDataRef.current = response.data;
     }
-  };
+  }, [activeTab, data]);
 
   useEffect(() => {
     loadTodos();

@@ -1,39 +1,30 @@
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEdit, faTrash } from "@fortawesome/free-solid-svg-icons";
-import { deleteTask, editTask, updateTask } from "../../api/api";
+import { deleteTask, editCheckBox, updateTask } from "../../api/api";
 import styles from "./List.module.css";
 import { Button, Checkbox, Space, Typography, Form, Input } from "antd";
 import { Todo } from "../../types/todo";
 import { useState } from "react";
+import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 
 const { Text } = Typography;
 
 export interface TaskProps {
   todo: Todo;
-  data: Todo[];
   loadTodos: () => void;
 }
 
-const Task: React.FC<TaskProps> = ({ todo, data, loadTodos }) => {
-  const [editId, setEditId] = useState<boolean>(false);
-  const [editTitle, setEditTitle] = useState<string>("");
+const Task: React.FC<TaskProps> = ({ todo, loadTodos }) => {
+  const [form] = Form.useForm();
+  const [isEditId, setIsEditId] = useState<boolean>(false);
 
-  const startEditing = (currentTitle: string) => {
-    setEditId(true);
-    setEditTitle(currentTitle);
-  };
-  const finishEditing = async (id: number, editTitle: string) => {
+  const finishEditing = async () => {
+    const valuesInput = form.getFieldsValue();
     try {
-      await updateTask(id, { title: editTitle });
+      await updateTask(todo.id, { title: valuesInput.title });
       await loadTodos();
-      setEditId(false);
-      setEditTitle("");
+      setIsEditId(false);
     } catch (error) {
       console.error("Error updating the task:", error);
     }
-  };
-  const closeEdeting = () => {
-    setEditId(false);
   };
   const handleDeleteTask = async (id: number) => {
     try {
@@ -44,23 +35,27 @@ const Task: React.FC<TaskProps> = ({ todo, data, loadTodos }) => {
     }
   };
 
-  const toogleTask = async (id: number) => {
-    const task = data.find((t) => t.id === id);
-    if (!task) return;
+  const toogleTask = async (id: number, task: Todo) => {
     try {
-      await editTask(id, task.isDone);
+      await editCheckBox(id, !task.isDone);
       await loadTodos();
     } catch (error) {
       console.error("Не удалось обновить задачу:", error);
     }
   };
+  
+  const handleCloseEditing = () => {
+    setIsEditId(false);
+    form.resetFields()
+  }
 
   return (
     <>
-      {editId ? (
+      {isEditId ? (
         <Form
-          initialValues={{ title: editTitle }}
-          onFinish={() => finishEditing(todo.id, editTitle)}
+          form={form}
+          initialValues={{ title: todo.title }}
+          onFinish={finishEditing}
         >
           <Space>
             <Form.Item
@@ -78,9 +73,9 @@ const Task: React.FC<TaskProps> = ({ todo, data, loadTodos }) => {
               ]}
               style={{ marginTop: "20px" }}
             >
-              <Input onChange={(e) => setEditTitle(e.target.value)} />
+              <Input />
             </Form.Item>
-            <Button onClick={closeEdeting} type="primary" danger>
+            <Button onClick={handleCloseEditing} type="primary" danger>
               Отмена
             </Button>
             <Button htmlType="submit" type="primary">
@@ -93,7 +88,7 @@ const Task: React.FC<TaskProps> = ({ todo, data, loadTodos }) => {
           <Space>
             <Checkbox
               checked={todo.isDone}
-              onChange={() => toogleTask(todo.id)}
+              onChange={() => toogleTask(todo.id, todo)}
               className={styles.input}
             />
             <Text
@@ -107,19 +102,18 @@ const Task: React.FC<TaskProps> = ({ todo, data, loadTodos }) => {
           </Space>
 
           <div className={styles.actions}>
-            <Button type="primary" onClick={() => startEditing(todo.title)}>
-              <FontAwesomeIcon icon={faEdit} />
-            </Button>
+            <Button
+              type="primary"
+              icon={<EditOutlined />}
+              onClick={() => setIsEditId(true)}
+            />
+
             <Button
               type="primary"
               danger
               onClick={() => handleDeleteTask(todo.id)}
-            >
-              <FontAwesomeIcon
-                icon={faTrash}
-                style={{ color: "white", height: "12px" }}
-              />
-            </Button>
+              icon={<DeleteOutlined />}
+            />
           </div>
         </>
       )}

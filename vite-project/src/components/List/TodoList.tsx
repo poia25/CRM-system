@@ -1,26 +1,26 @@
+import React from "react";
 import Task from "./Task.tsx";
-import styles from "./List.module.css";
 import { Todo } from "../../types/todo.ts";
+import { List } from "antd";
 
 export interface TodoListProps {
   todos: Todo[];
   loadTodos: () => void;
 }
-
-const TodoList: React.FC<TodoListProps> = ({ todos, loadTodos }) => {
+const TodoList: React.FC<TodoListProps> = React.memo(({ todos, loadTodos }) => {
   return (
     <div>
-      <ul className={styles.list}>
-        {todos?.map((todo) => (
-          <li key={todo.id} className={styles.taskItem}>
-            <>
-              <Task todo={todo} data={todos} loadTodos={loadTodos} />
-            </>
-          </li>
-        ))}
-      </ul>
+      <List
+        dataSource={todos}
+        size="large"
+        renderItem={(todo) => (
+          <List.Item>
+            <Task todo={todo} loadTodos={loadTodos} />
+          </List.Item>
+        )}
+      />
     </div>
   );
-};
+});
 
 export default TodoList;
