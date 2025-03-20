@@ -37,6 +37,7 @@ function TodoPage() {
     }, 5000);
     return () => clearInterval(interval);
   }, [activeTab]);
+
   return (
     <>
       <div className="App">

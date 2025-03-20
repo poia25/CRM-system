@@ -3,7 +3,7 @@ import Task from "./Task.tsx";
 import { Todo } from "../../types/todo.ts";
 import { List } from "antd";
 
-interface TodoListProps {
+export interface TodoListProps {
   todos: Todo[];
   loadTodos: () => void;
 }
