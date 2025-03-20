@@ -1,12 +1,6 @@
 import { TodoStatus, TodoRequest } from "../types/todo.ts";
-import axios from "axios";
+import { axiosInstance } from "./auth.ts";
 
-const axiosInstance = axios.create({
-  baseURL: "https://easydev.club/api/v1",
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
 
 export async function addTask(task: TodoRequest) {
   try {
