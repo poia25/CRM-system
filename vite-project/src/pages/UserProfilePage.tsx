@@ -1,68 +1,68 @@
-import { useEffect, useState } from "react";
-import { ProfileRequest } from "../types/user.ts";
-import { getUpdateProfile, logoutUser } from "../store/actionCreators";
-import { useSelector } from "react-redux";
-import { RootState, useAppDispatch } from "../store/store";
 import { Button, Form, Input } from "antd";
-import { loadProfile } from "../api/auth.ts";
-import { loadProfileSuccess } from "../store/authReducer.ts";
+import { useEffect, useState } from "react";
+import { Params, useNavigate, useParams } from "react-router";
+import { retrieveUserProfile, updateUserProfile } from "../api/auth";
+import { Roles } from "../types/admin";
+import { ProfileRequest } from "../types/user";
 
-export const ProfilePage = () => {
-  const dispatch = useAppDispatch();
-  const profile = useSelector(
-    (state: RootState) => state.auth.profileData.profile
-  );
-  const isLogin = useSelector(
-    (state: RootState) => state.auth.authData.isAuthorizated
-  );
+interface DataType {
+  id: number;
+  username: string;
+  email: string;
+  date: string; // ISO date string
+  isBlocked: boolean;
+  roles: Roles[];
+  phoneNumber: string;
+}
+
+export const UserProfilePage = () => {
+  const { id } = useParams<Params>();
+  const navigate = useNavigate();
+  const [user, setUser] = useState<DataType | null>(null);
   const [isEdit, setIsEdit] = useState(false);
   const [form] = Form.useForm();
 
+  const userId = Number(id);
+
+  useEffect(() => {
+    async function getUserData() {
+      const responseUserInfo = await retrieveUserProfile(userId);
+      setUser(responseUserInfo.data);
+    }
+    getUserData();
+  }, [id]);
+
+  console.log(user);
+
   const onFinishHandler = (values: ProfileRequest) => {
-    console.log(values);
-    if (
-      values.email === profile?.email ||
-      values.username === profile?.username
-    ) {
+    if (values.email === user?.email || values.username === user?.username) {
       setIsEdit(false);
       form.resetFields();
       return;
     }
     try {
-      dispatch(getUpdateProfile(values));
+      if (user) {
+        updateUserProfile(user.id, values);
+        setIsEdit(false);
+        form.resetFields();
+      }
     } catch {
       console.log("ОШИБКА ПУТ ЗАПРОСА");
     }
   };
-
   const handleCloseEditing = () => {
     setIsEdit(false);
     form.resetFields();
   };
-
-  useEffect(() => {
-    const loadProfileProg = async () => {
-      loadProfile();
-      let res = await loadProfile();
-      if (res) {
-        dispatch(loadProfileSuccess(res));
-      }
-    };
-    loadProfileProg();
-    const interval = setInterval(() => {
-      loadProfileProg();
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [isLogin]);
 
   return (
     <>
       {isEdit ? (
         <Form
           initialValues={{
-            username: profile?.username,
-            email: profile?.email,
-            phoneNumber: profile?.phoneNumber.slice(1),
+            username: user?.username,
+            email: user?.email,
+            phoneNumber: user?.phoneNumber,
           }}
           onFinish={onFinishHandler}
           form={form}
@@ -106,35 +106,30 @@ export const ProfilePage = () => {
             validateDebounce={1000}
             rules={[
               {
-                pattern: /^((8|\+7)[\- ]?)?(\(?\d{3}\)?[\- ]?)?[\d\- ]{7,10}$/,
+                pattern: /^\+[1-9]\d{1,14}$/,
                 message: "Неправильный формат телефона",
               },
             ]}
           >
-            <Input addonBefore="+7" maxLength={10} style={{ width: "100%" }} />
+            <Input maxLength={10} style={{ width: "100%" }} />
           </Form.Item>
           <Button htmlType="submit">Сохранить</Button>
           <Button onClick={handleCloseEditing}>Отмена</Button>
         </Form>
       ) : (
         <>
-          <ul style={{ listStyle: "none" }}>
-            <li>Имя полььзователя: {profile?.username}</li>
-            <li>Почтовый адрес: {profile?.email}</li>
-            <li>Телефон:+7{profile?.phoneNumber.slice(1)}</li>
+          <ul style={{ listStyle: "none", padding: 10 }}>
+            <li>Имя полььзователя: {user?.username}</li>
+            <li>Почтовый адрес: {user?.email}</li>
+            <li>Телефон:+7{user?.phoneNumber.slice(1)}</li>
           </ul>
           <Button onClick={() => setIsEdit(true)}>Редактировать</Button>
-          <Button
-            onClick={() => {
-              dispatch(logoutUser());
-            }}
-          >
-            ВЫЙТИ
-          </Button>
+          <Button onClick={() => navigate("/users")}>Сохранить</Button>
+          <Button onClick={() => navigate("/users")}>Вернуться</Button>
         </>
       )}
     </>
   );
 };
 
-export default ProfilePage;
+export default UserProfilePage;

@@ -10,6 +10,7 @@ import TokenService from "../services/tokenServices";
 import { getProfile, logoutUser } from "../store/actionCreators";
 import { store } from "../store/store";
 import { loginSucces, logoutSucces } from "../store/authReducer";
+import { UserRolesRequest } from "../types/admin";
 
 export const axiosInstancePublic = axios.create({
   baseURL: "https://easydev.club/api/v1",
@@ -26,6 +27,7 @@ export const axiosInstance = axios.create({
 
 axiosInstance.interceptors.request.use((config) => {
   const token = TokenService.getToken();
+  console.log(token);
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -118,3 +120,47 @@ export const updateProfile = async (
   const response = await axiosInstance.put("/user/profile", value);
   return response.data;
 };
+
+export const retrieveUserProfile = async (id: number) => {
+  const response = await axiosInstance.get(`/admin/users/${id}`);
+  return response;
+};
+export const updateUserProfile = async (
+  id: number,
+  values: ProfileRequest
+): Promise<ProfileRequest> => {
+  try {
+    const response = await axiosInstance.put(`/admin/users/${id}`, values);
+    return response.data;
+  } catch (error) {
+    console.log("Неполучилось обновить пользователя");
+    throw error;
+  }
+};
+
+export const blockUser = async (id: number): Promise<AxiosResponse> => {
+  const response = await axiosInstance.post(`/admin/users/${id}/block`);
+  return response;
+};
+export const unLockUser = async (id: number): Promise<AxiosResponse> => {
+  const response = await axiosInstance.post(`/admin/users/${id}/unblock`);
+  return response;
+};
+
+export const updateUserRoles = async (
+  id: number,
+  values: UserRolesRequest
+): Promise<ProfileRequest> => {
+  try {
+    const response = await axiosInstance.post(`/admin/users/${id}/rights`, values);
+    return response.data;
+  } catch (error) {
+    console.log("Неполучилось обновить пользователя");
+    throw error;
+  }
+};
+
+export const deleteUser = async (id:number) =>{
+  const response = await axiosInstance.delete(`/admin/users/${id}`);
+  return response
+}

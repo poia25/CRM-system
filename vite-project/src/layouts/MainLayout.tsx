@@ -6,6 +6,7 @@ import { RootState } from "../store/store";
 import TokenService from "../services/tokenServices";
 import { useEffect } from "react";
 import { promiseRefreshToken } from "../api/auth";
+import { Roles } from "../types/admin";
 
 const MainLayout = () => {
   const ref = TokenService.getRefreshToken();
@@ -15,9 +16,30 @@ const MainLayout = () => {
   const isLoading = useSelector(
     (state: RootState) => state.auth.authData.isLoading
   );
+  const user = useSelector(
+    (state: RootState) => state.auth.profileData.profile
+  );
   const dispatch = useDispatch();
 
   const menuItems: MenuProps["items"] = [
+    {
+      key: "1",
+      label: <Link to="/todo">Todo</Link>,
+    },
+    {
+      key: "2",
+      label: <Link to="/profile">Profile</Link>,
+    },
+    {
+      key: "3",
+      label: <Link to="/users">Users</Link>,
+    },
+    {
+      key: "4",
+      label: <Link to="/userProfile">UserProfile</Link>,
+    },
+  ];
+  const menuItemsUser: MenuProps["items"] = [
     {
       key: "1",
       label: <Link to="/todo">Todo</Link>,
@@ -48,7 +70,7 @@ const MainLayout = () => {
     return (
       <>
         <Menu
-          items={menuItems}
+          items={(user?.roles.includes(Roles.ADMIN)) ? menuItems :  menuItemsUser}
           mode="vertical"
           style={{
             border: "1px solid #f0f0f0",
