@@ -1,5 +1,5 @@
 import { Dispatch, UnknownAction } from "@reduxjs/toolkit";
-import { AuthData, Profile, ProfileRequest, Token } from "../types/user";
+import { AuthData, ProfileRequest, Token } from "../types/user";
 import {
   loginFailure,
   loginStart,
@@ -11,6 +11,7 @@ import {
 } from "./authReducer";
 import { loadProfile, login, logout, updateProfile } from "../api/auth";
 import TokenService from "../services/tokenServices";
+import { BaseUser } from "../types/admin";
 
 export const loginUser = (data: AuthData) => {
   return async (dispatch: Dispatch): Promise<void> => {
@@ -39,7 +40,7 @@ export const getProfile =
       dispatch(loadProfileStart());
       const res = await loadProfile();
       if (res) {
-        dispatch(loadProfileSuccess(res));
+        dispatch(loadProfileSuccess(res as BaseUser));
       }
     } catch (error: any) {
       dispatch(loadProfileFailure(error.message));
@@ -53,7 +54,7 @@ export const getUpdateProfile =
     try {
       dispatch(loadProfileStart());
       const res = await updateProfile(values);
-      dispatch(loadProfileSuccess(res as Profile));
+      dispatch(loadProfileSuccess(res as BaseUser));
       dispatch(getProfile() as unknown as UnknownAction);
     } catch (error: any) {
       dispatch(loadProfileFailure(error.message));

@@ -1,12 +1,13 @@
-import { useSelector } from 'react-redux';
-import { Navigate, Outlet } from 'react-router-dom';
-import { RootState } from '../store/store';
-import { Roles } from '../types/admin';
+import { useSelector } from "react-redux";
+import { Navigate, Outlet } from "react-router-dom";
+import { RootState } from "../store/store";
+import { BaseUser, Roles } from "../types/admin";
 
 const AdminRoute = () => {
-  const user = useSelector(
+  const user: BaseUser | null = useSelector(
     (state: RootState) => state.auth.profileData.profile
   );
+  console.log(user);
   if (!user?.roles.includes(Roles.ADMIN)) {
     return <Navigate to="/" replace />;
   }

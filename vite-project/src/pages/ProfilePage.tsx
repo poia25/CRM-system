@@ -6,6 +6,7 @@ import { RootState, useAppDispatch } from "../store/store";
 import { Button, Form, Input } from "antd";
 import { loadProfile } from "../api/auth.ts";
 import { loadProfileSuccess } from "../store/authReducer.ts";
+import { BaseUser } from "../types/admin.ts";
 
 export const ProfilePage = () => {
   const dispatch = useAppDispatch();
@@ -45,7 +46,7 @@ export const ProfilePage = () => {
       loadProfile();
       let res = await loadProfile();
       if (res) {
-        dispatch(loadProfileSuccess(res));
+        dispatch(loadProfileSuccess(res as BaseUser));
       }
     };
     loadProfileProg();

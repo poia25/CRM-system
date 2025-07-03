@@ -9,14 +9,15 @@ export interface UserFilters {
 }
 
 // Интерфейс пользователя
-export interface User {
+export interface BaseUser {
   id: number;
   username: string;
   email: string;
   date: string; // ISO date string
   isBlocked: boolean;
-  roles: Roles[];
   phoneNumber: string;
+  roles:Roles[];
+  isAdmin: boolean
 }
 // Интерфейс метаинформации
 
@@ -48,3 +49,31 @@ export interface UserRequest {
   phoneNumber?: string;
 }
 
+
+export interface UserRegistration {
+  email: string;
+  login: string;
+  password: string;
+  phoneNumber: string;
+  username: string;
+}
+
+export interface AuthData {
+  login: string;
+  password: string;
+}
+
+export interface RefreshToken {
+  refreshToken: string;
+}
+
+export type ProfileRequest = Partial<Pick<BaseUser, 'username' | 'email' | 'phoneNumber'>>
+
+export interface PasswordRequest {
+  password: string;
+}
+
+export interface Token {
+  accessToken: string;
+  refreshToken: string;
+}

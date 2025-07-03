@@ -11,7 +11,7 @@ import {
   TableProps,
   Tag,
 } from "antd";
-import { Roles, User, UserRolesRequest } from "../types/admin";
+import { BaseUser, Roles, UserRolesRequest } from "../types/admin";
 import {
   axiosInstance,
   blockUser,
@@ -26,16 +26,6 @@ import {
 } from "@ant-design/icons";
 import { useNavigate } from "react-router";
 
-interface DataType {
-  id: number;
-  username: string;
-  email: string;
-  date: string; // ISO date string
-  isBlocked: boolean;
-  roles: Roles[];
-  phoneNumber: string;
-}
-
 interface FilterType {
   search: string;
   sortBy: string;
@@ -47,7 +37,7 @@ interface FilterType {
 
 export const UserPage = () => {
   const [loading, setLoading] = useState(false);
-  const [data, setData] = useState<DataType[]>([]);
+  const [data, setData] = useState<BaseUser[]>([]);
   const [filters, setFilters] = useState<FilterType>({
     search: "",
     sortBy: "id",
@@ -142,7 +132,7 @@ export const UserPage = () => {
     }
   };
 
-  const handleEditUserRoles = async (id: number, data: User) => {
+  const handleEditUserRoles = async (id: number, data: BaseUser) => {
     try {
       const updatedRoles = [...data.roles];
       const adminIndex = updatedRoles.indexOf(Roles.ADMIN);
@@ -201,7 +191,7 @@ export const UserPage = () => {
     }
   }
 
-  const handleSorterTableChange:TableProps<User>['onChange'] = (pagination, filters,sorter) => {
+  const handleSorterTableChange:TableProps<BaseUser>['onChange'] = (_pagination, _filters,sorter) => {
     if('field' in sorter && 'order' in sorter){
       fetchSortData(sorter.field as string, sorter.order)
     }
@@ -243,7 +233,7 @@ export const UserPage = () => {
     },
   ];
 
-  const columns: TableProps<User>["columns"] = [
+  const columns: TableProps<BaseUser>["columns"] = [
     {
       title: "Имя",
       dataIndex: "username",
@@ -314,7 +304,7 @@ export const UserPage = () => {
     {
       title: "Действия",
       key: "action",
-      render: (record: User) => (
+      render: (record: BaseUser) => (
         <div style={{ display: "flex", gap: "10px" }}>
           <Button
             type="default"
