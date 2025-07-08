@@ -121,10 +121,51 @@ export const updateProfile = async (
   return response.data;
 };
 
+//ADMIN PANEL
+
+export const getUsersProfile = async (pageSize: number, current: number) => {
+  const response = await axiosInstance.get(
+    `/admin/users?limit=${pageSize}&offset=${current}`
+  );
+  return response;
+};
+
+interface filterProps {
+  search: string;
+  sortBy: string | null;
+  sortOrder: string | null;
+  isBlocked: boolean | null;
+  limit: number;
+  offset: number;
+}
+export const TEST = async (filter: filterProps) => {
+  const response = await axiosInstance.get(
+    `/admin/users?search=${filter.search}&sortBy=${filter.sortBy}&sortOrder=${filter.sortOrder}&isBlocked=${filter.isBlocked}&limit=${filter.limit}&offset=${filter.offset}`
+  );
+  return response;
+};
+// export const getFilterUsersProfile = async (filter: filterProps) => {
+//   if (filter.search) {
+//     const response = await axiosInstance.get(
+//       `/admin/users?search=${filter.search}`
+//     );
+//     return response;
+//   } else if (filter.sortBy || filter.sortOrder) {
+//     const response = await axiosInstance.get(
+//       `/admin/users?sortBy=${filter.sortBy}&sortOrder=${filter.sortOrder}`
+//     );
+//   }
+//   const response = await axiosInstance.get(
+//     `/admin/users?limit=${pageSize}&offset=${current}`
+//   );
+//   return response;
+// };
+
 export const retrieveUserProfile = async (id: number) => {
   const response = await axiosInstance.get(`/admin/users/${id}`);
   return response;
 };
+
 export const updateUserProfile = async (
   id: number,
   values: ProfileRequest
@@ -152,7 +193,10 @@ export const updateUserRoles = async (
   values: UserRolesRequest
 ): Promise<ProfileRequest> => {
   try {
-    const response = await axiosInstance.post(`/admin/users/${id}/rights`, values);
+    const response = await axiosInstance.post(
+      `/admin/users/${id}/rights`,
+      values
+    );
     return response.data;
   } catch (error) {
     console.log("Неполучилось обновить пользователя");
@@ -160,7 +204,7 @@ export const updateUserRoles = async (
   }
 };
 
-export const deleteUser = async (id:number) =>{
+export const deleteUser = async (id: number) => {
   const response = await axiosInstance.delete(`/admin/users/${id}`);
-  return response
-}
+  return response;
+};

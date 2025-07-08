@@ -1,9 +1,7 @@
-import { ChangeEvent, useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useRef, useState } from "react";
 import {
   Button,
-  Dropdown,
   Input,
-  MenuProps,
   Modal,
   Pagination,
   Table,
@@ -13,9 +11,9 @@ import {
 } from "antd";
 import { BaseUser, Roles, UserRolesRequest } from "../types/admin";
 import {
-  axiosInstance,
   blockUser,
   deleteUser,
+  TEST,
   unLockUser,
   updateUserRoles,
 } from "../api/auth";
@@ -25,18 +23,19 @@ import {
   PhoneOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router";
+import { ColumnType } from "antd/es/table";
 
 interface FilterType {
   search: string;
-  sortBy: string;
-  sortOrder: string;
+  sortBy: string | null;
+  sortOrder: string | null;
   isBlocked: boolean | null;
   limit: number;
   offset: number;
 }
 
 export const UserPage = () => {
-  const [loading, setLoading] = useState(false);
+  const [_loading, setLoading] = useState(false);
   const [data, setData] = useState<BaseUser[]>([]);
   const [filters, setFilters] = useState<FilterType>({
     search: "",
@@ -58,44 +57,45 @@ export const UserPage = () => {
   const navigate = useNavigate();
   const { confirm } = Modal;
 
+  const filtersRef = useRef(filters);
+  const loadingRef = useRef(false);
+
+  useEffect(() => {
+    filtersRef.current = filters;
+  }, [filters]);
+
   const loadData = async () => {
-    if (loading) {
-      return;
-    }
+    if (loadingRef.current) return;
+
+    loadingRef.current = true;
     setLoading(true);
+
     try {
-      if (tableParams.pagination.current && tableParams.pagination.pageSize) {
-        const response = await axiosInstance.get(
-          `/admin/users?limit=${tableParams.pagination.pageSize}&offset=${tableParams.pagination.current}`
-        );
-        setData(response.data.data);
-        setTableParams({
-          pagination: {
-            ...tableParams.pagination,
-            total: response.data.meta.totalAmount,
-          },
-        });
-        setLoading(false);
-      }
+      const response = await TEST(filtersRef.current);
+      setData(response.data.data);
+      setTableParams({
+        ...tableParams,
+        pagination: {
+          ...tableParams.pagination,
+          total: response.data.meta.totalAmount,
+        },
+      });
     } catch (error) {
-      console.log("Ошибка при загрузке профиля", error);
+      console.error("Ошибка при загрузке данных", error);
+    } finally {
+      loadingRef.current = false;
       setLoading(false);
-      throw error;
     }
   };
-  
+  useEffect(() => {
+    loadData();
+    const interval = setInterval(loadData, 15000);
+    return () => clearInterval(interval);
+  }, [filters]);
+
   useEffect(() => {
     loadData();
   }, [tableParams.pagination.current, tableParams.pagination.pageSize]);
-
-  useEffect(() => {
-    loadData();
-    const interval = setInterval(() => {
-      loadData();
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
-
 
   const handleTableChange = (page: number, pageSize?: number) => {
     setTableParams({
@@ -105,6 +105,12 @@ export const UserPage = () => {
         pageSize: pageSize || tableParams.pagination.pageSize,
       },
     });
+    if (pageSize)
+      setFilters((prevFilters) => ({
+        ...prevFilters,
+        limit: pageSize,
+        offset: page,
+      }));
   };
 
   const roleColors = {
@@ -115,20 +121,17 @@ export const UserPage = () => {
 
   const handleSearch = async (e: ChangeEvent<HTMLInputElement>) => {
     const newSearchValue: string = e.target.value;
-    setFilters({ ...filters, search: newSearchValue });
-    const response = await axiosInstance.get(
-      `/admin/users?search=${newSearchValue}`
-    );
-    setData(response.data.data);
+    setFilters((prevFilters) => ({ ...prevFilters, search: newSearchValue }));
   };
 
   const handleEditBLocked = async (id: number, isBlocked: boolean) => {
     if (isBlocked) {
       await unLockUser(id);
-      loadData();
+      setFilters((prevFilters) => ({ ...prevFilters, isBlocked: true }));
     } else {
       await blockUser(id);
-      loadData();
+      setFilters((prevFilters) => ({ ...prevFilters, isBlocked: false }));
+      // loadData();
     }
   };
 
@@ -151,19 +154,6 @@ export const UserPage = () => {
     }
   };
 
-  const handleFilterBlockUser = async (fil: string) => {
-    const blockUserList = async () => {
-      try {
-        const response = await axiosInstance.get(`/admin/users${fil}`);
-        setData(response.data.data);
-      } catch (error) {
-        console.log("Ошибка при загрузке профиля", error);
-        throw error;
-      }
-    };
-    blockUserList();
-  };
-
   const handleDeleteUser = async (id: number) => {
     confirm({
       title: "Вы точно хотите удалить?",
@@ -174,66 +164,46 @@ export const UserPage = () => {
       cancelText: "Отмена",
       onOk() {
         deleteUser(id);
-        loadData();
+        // loadData();
       },
     });
   };
 
-  const fetchSortData = async (sortBy?:string, sortOrder?: 'ascend' | 'descend' | null) => {
-    setLoading(true)
-    try{
-      const response = await axiosInstance.get(`/admin/users?sortBy=${sortBy}&sortOrder=${sortOrder}`);
-      setData(response.data.data)
-    }catch{
-      console.log('НЕ УДАЧА')
-    }finally{
-      setLoading(false)
+  const handleSorterTableChange: TableProps<BaseUser>["onChange"] = (
+  _pagination,
+  _filters,
+  sorter
+) => {
+  if('field' in sorter)
+  setFilters(prev => {
+    const newState = { ...prev };
+
+    // Если это сброс сортировки (все поля undefined)
+    if (!sorter.field && !sorter.order) {
+      return {
+        ...newState,
+        sortBy: null,
+        sortOrder: null,
+        isBlocked: null // Явно устанавливаем null при сбросе
+      };
     }
-  }
 
-  const handleSorterTableChange:TableProps<BaseUser>['onChange'] = (_pagination, _filters,sorter) => {
-    if('field' in sorter && 'order' in sorter){
-      fetchSortData(sorter.field as string, sorter.order)
+    // Если сортировка по isBlocked
+    if (sorter.field === "isBlocked") {
+      newState.isBlocked = sorter.order === "ascend" ? true : false;
     }
-  }
 
-  const items: MenuProps["items"] = [
-    {
-      key: "1",
-      label: (
-        <button
-          style={{ cursor: "pointer", border: "none" }}
-          onClick={() => handleFilterBlockUser("")}
-        >
-          Все
-        </button>
-      ),
-    },
-    {
-      key: "2",
-      label: (
-        <button
-          style={{ cursor: "pointer", border: "none" }}
-          onClick={() => handleFilterBlockUser("?isBlocked=true")}
-        >
-          Заблокированные
-        </button>
-      ),
-    },
-    {
-      key: "3",
-      label: (
-        <button
-          style={{ cursor: "pointer", border: "none" }}
-          onClick={() => handleFilterBlockUser("?isBlocked=false")}
-        >
-          Не Заблокированные
-        </button>
-      ),
-    },
-  ];
+    // Общие параметры сортировки
+    newState.sortBy = sorter.field ? String(sorter.field) : prev.sortBy;
+    newState.sortOrder = sorter.order 
+      ? sorter.order === "ascend" ? "asc" : "desc"
+      : null;
 
-  const columns: TableProps<BaseUser>["columns"] = [
+    return newState;
+  });
+};
+
+  const columns: ColumnType<BaseUser>[] = [
     {
       title: "Имя",
       dataIndex: "username",
@@ -277,14 +247,14 @@ export const UserPage = () => {
       ),
     },
     {
-      title: (
-        <Dropdown menu={{ items }}>
-          <span style={{ cursor: "pointer" }}>Блокировка▽</span>
-        </Dropdown>
-      ),
+      title: "Блокировка",
       dataIndex: "isBlocked",
       key: "isBlocked",
-      render: (blocked: boolean) => (blocked ? "Заблокирован" : "Активен"),
+      sorter: true,
+      sortDirections: ["ascend", "descend"], // Не включаем undefined явно
+      defaultSortOrder: null, // Явное указание
+      render: (value) =>
+        value === true ? "Blocked" : value === false ? "Active" : "Any",
     },
     {
       title: "Дата регистр",
@@ -361,6 +331,8 @@ export const UserPage = () => {
         pagination={false}
         rowKey="id"
         onChange={handleSorterTableChange}
+        sortDirections={["ascend", "descend"]} // Важно!
+        showSorterTooltip={false} // Для чистоты тестирования
       />
       <Pagination
         style={{ marginTop: 16, textAlign: "center" }}

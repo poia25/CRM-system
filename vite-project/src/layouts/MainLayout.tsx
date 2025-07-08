@@ -34,10 +34,6 @@ const MainLayout = () => {
       key: "3",
       label: <Link to="/users">Users</Link>,
     },
-    {
-      key: "4",
-      label: <Link to="/userProfile">UserProfile</Link>,
-    },
   ];
   const menuItemsUser: MenuProps["items"] = [
     {
