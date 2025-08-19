@@ -57,12 +57,23 @@ export const UserPage = () => {
   const navigate = useNavigate();
   const { confirm } = Modal;
 
+
   const filtersRef = useRef(filters);
   const loadingRef = useRef(false);
 
   useEffect(() => {
     filtersRef.current = filters;
   }, [filters]);
+
+  useEffect(() => {
+    loadData();
+    const interval = setInterval(loadData, 15000);
+    return () => clearInterval(interval);
+  }, [filters]);
+
+  useEffect(() => {
+    loadData();
+  }, [tableParams.pagination.current, tableParams.pagination.pageSize]);
 
   const loadData = async () => {
     if (loadingRef.current) return;
@@ -87,15 +98,6 @@ export const UserPage = () => {
       setLoading(false);
     }
   };
-  useEffect(() => {
-    loadData();
-    const interval = setInterval(loadData, 15000);
-    return () => clearInterval(interval);
-  }, [filters]);
-
-  useEffect(() => {
-    loadData();
-  }, [tableParams.pagination.current, tableParams.pagination.pageSize]);
 
   const handleTableChange = (page: number, pageSize?: number) => {
     setTableParams({
@@ -119,6 +121,10 @@ export const UserPage = () => {
     MODERATOR: "orange",
   };
 
+  const handleGoingToProfile = (id: number) => {
+    navigate(`/users/${id}`);
+  };
+
   const handleSearch = async (e: ChangeEvent<HTMLInputElement>) => {
     const newSearchValue: string = e.target.value;
     setFilters((prevFilters) => ({ ...prevFilters, search: newSearchValue }));
@@ -127,34 +133,38 @@ export const UserPage = () => {
   const handleEditBLocked = async (id: number, isBlocked: boolean) => {
     if (isBlocked) {
       await unLockUser(id);
-      setFilters((prevFilters) => ({ ...prevFilters, isBlocked: true }));
+      loadData();
     } else {
       await blockUser(id);
-      setFilters((prevFilters) => ({ ...prevFilters, isBlocked: false }));
-      // loadData();
+      loadData();
     }
   };
 
-  const handleEditUserRoles = async (id: number, data: BaseUser) => {
-    try {
-      const updatedRoles = [...data.roles];
-      const adminIndex = updatedRoles.indexOf(Roles.ADMIN);
-      if (adminIndex !== -1) {
-        data.roles.splice(adminIndex, 1);
-      } else {
-        data.roles.push(Roles.ADMIN);
-      }
+  const handleEditUserRolesAdmin = async (id: number, _data: BaseUser) => {
+    const request: UserRolesRequest = { roles: [Roles.ADMIN] };
 
-      const request: UserRolesRequest = { roles: updatedRoles };
+    await updateUserRoles(id, request);
+    loadData();
+  };
+  const handleEditUserRolesModerator = async (id: number, _data: BaseUser) => {
+    const request: UserRolesRequest = { roles: [Roles.MODERATOR] };
 
-      await updateUserRoles(id, request);
-      loadData();
-    } catch (error) {
-      console.log(error);
-    }
+    await updateUserRoles(id, request);
+    loadData();
+  };
+  const handleEditUserRolesUser = async (id: number, _data: BaseUser) => {
+    const request: UserRolesRequest = { roles: [Roles.USER] };
+
+    await updateUserRoles(id, request);
+    loadData();
   };
 
   const handleDeleteUser = async (id: number) => {
+    const del = async () => {
+      await deleteUser(id);
+      loadData();
+    };
+
     confirm({
       title: "Вы точно хотите удалить?",
       icon: <ExclamationCircleFilled />,
@@ -163,45 +173,46 @@ export const UserPage = () => {
       okType: "danger",
       cancelText: "Отмена",
       onOk() {
-        deleteUser(id);
-        // loadData();
+        del();
       },
     });
   };
 
   const handleSorterTableChange: TableProps<BaseUser>["onChange"] = (
-  _pagination,
-  _filters,
-  sorter
-) => {
-  if('field' in sorter)
-  setFilters(prev => {
-    const newState = { ...prev };
+    _pagination,
+    _filters,
+    sorter
+  ) => {
+    if ("field" in sorter)
+      setFilters((prev) => {
+        const newState = { ...prev };
 
-    // Если это сброс сортировки (все поля undefined)
-    if (!sorter.field && !sorter.order) {
-      return {
-        ...newState,
-        sortBy: null,
-        sortOrder: null,
-        isBlocked: null // Явно устанавливаем null при сбросе
-      };
-    }
+        // Если это сброс сортировки (все поля undefined)
+        if (!sorter.field && !sorter.order) {
+          return {
+            ...newState,
+            sortBy: null,
+            sortOrder: null,
+            isBlocked: null, // Явно устанавливаем null при сбросе
+          };
+        }
 
-    // Если сортировка по isBlocked
-    if (sorter.field === "isBlocked") {
-      newState.isBlocked = sorter.order === "ascend" ? true : false;
-    }
+        // Если сортировка по isBlocked
+        if (sorter.field === "isBlocked") {
+          newState.isBlocked = sorter.order === "ascend" ? true : false;
+        }
 
-    // Общие параметры сортировки
-    newState.sortBy = sorter.field ? String(sorter.field) : prev.sortBy;
-    newState.sortOrder = sorter.order 
-      ? sorter.order === "ascend" ? "asc" : "desc"
-      : null;
+        // Общие параметры сортировки
+        newState.sortBy = sorter.field ? String(sorter.field) : prev.sortBy;
+        newState.sortOrder = sorter.order
+          ? sorter.order === "ascend"
+            ? "asc"
+            : "desc"
+          : null;
 
-    return newState;
-  });
-};
+        return newState;
+      });
+  };
 
   const columns: ColumnType<BaseUser>[] = [
     {
@@ -278,7 +289,7 @@ export const UserPage = () => {
         <div style={{ display: "flex", gap: "10px" }}>
           <Button
             type="default"
-            onClick={() => navigate(`/users/${record.id}`)}
+            onClick={() => handleGoingToProfile(record.id)}
           >
             Перейти к профилю
           </Button>
@@ -293,12 +304,26 @@ export const UserPage = () => {
           <Button
             type="default"
             onClick={() => {
-              handleEditUserRoles(record.id, record);
+              handleEditUserRolesAdmin(record.id, record);
             }}
           >
-            {record.roles.includes(Roles.ADMIN)
-              ? "Забрать админку"
-              : "Дать админку"}
+            Дать Админку
+          </Button>
+          <Button
+            type="default"
+            onClick={() => {
+              handleEditUserRolesModerator(record.id, record);
+            }}
+          >
+            Дать Модер
+          </Button>
+          <Button
+            type="default"
+            onClick={() => {
+              handleEditUserRolesUser(record.id, record);
+            }}
+          >
+            Забрать роли
           </Button>
           <Button
             type="default"

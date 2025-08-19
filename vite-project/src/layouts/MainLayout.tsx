@@ -1,88 +1,102 @@
 import { Menu, Spin } from "antd";
-import { Link, Navigate, Outlet } from "react-router-dom";
+import { Link, Navigate, Outlet, useLocation } from "react-router-dom";
 import type { MenuProps } from "antd";
-import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../store/store";
-import TokenService from "../services/tokenServices";
-import { useEffect } from "react";
-import { promiseRefreshToken } from "../api/auth";
 import { Roles } from "../types/admin";
+import { useSelector } from "react-redux";
+import { useRefreshToken } from "../components/hooks/useRefreshToken";
+import { createSelector } from "@reduxjs/toolkit";
+import { memo, useMemo } from "react";
+import TokenService from "../services/tokenServices";
+
+const memoizedSelectAuthData = createSelector(
+  [
+    (state: RootState) => state.auth.authData.isLoading,
+    (state: RootState) => state.auth.authData.isAuthorizated,
+    (state: RootState) => state.auth.profileData.profile,
+  ],
+  (isLoading, isAuthorized, user) => ({
+    isLoading,
+    isAuthorized,
+    user,
+  })
+);
 
 const MainLayout = () => {
-  const ref = TokenService.getRefreshToken();
-  const isLogin = useSelector(
-    (state: RootState) => state.auth.authData.isAuthorizated
-  );
-  const isLoading = useSelector(
-    (state: RootState) => state.auth.authData.isLoading
-  );
-  const user = useSelector(
-    (state: RootState) => state.auth.profileData.profile
-  );
-  const dispatch = useDispatch();
+  const {
+    isLoading,
+    isAuthorized: isLogin,
+    user,
+  } = useSelector(memoizedSelectAuthData);
+  console.log(TokenService.getToken())
 
-  const menuItems: MenuProps["items"] = [
-    {
-      key: "1",
-      label: <Link to="/todo">Todo</Link>,
-    },
-    {
-      key: "2",
-      label: <Link to="/profile">Profile</Link>,
-    },
-    {
-      key: "3",
-      label: <Link to="/users">Users</Link>,
-    },
-  ];
-  const menuItemsUser: MenuProps["items"] = [
-    {
-      key: "1",
-      label: <Link to="/todo">Todo</Link>,
-    },
-    {
-      key: "2",
-      label: <Link to="/profile">Profile</Link>,
-    },
-  ];
-
-  useEffect(() => {
-    const checkAuth = async () => {
-      if (ref) {
-        try {
-          promiseRefreshToken();
-        } catch (error) {
-          console.error("Failed to refresh token:", error);
-        }
-      }
-    };
-    checkAuth();
-  }, [dispatch]);
+  useRefreshToken();
 
   if (isLoading) {
     return <Spin spinning fullscreen />;
   }
-  if (isLogin) {
-    return (
-      <>
-        <Menu
-          items={(user?.roles.includes(Roles.ADMIN)) ? menuItems :  menuItemsUser}
-          mode="vertical"
-          style={{
-            border: "1px solid #f0f0f0",
-            padding: "10px",
-            borderRadius: "5px",
-            backgroundColor: "#f0f0f0",
-            width: 200,
-            float: "left",
-          }}
-        />
-        <Outlet />
-      </>
-    );
-  } else {
-    return <Navigate to="/auth" />;
+
+  if (!isLogin) {
+    return <Navigate to="/auth" replace />;
   }
+
+  return (
+    <>
+      <NavigationMenu role={user?.roles} />
+      <Outlet />
+    </>
+  );
 };
+
+const NavigationMenu = memo(({ role }: { role?: Roles[] }) => {
+  const { isAuthorized: _isLogin } = useSelector(
+    memoizedSelectAuthData
+  );
+  const location = useLocation();
+  const menuItems: MenuProps["items"] = useMemo(() => {
+    const items = [
+      {
+        key: "todo",
+        label: <Link to="/todo">Todo</Link>,
+      },
+      {
+        key: "profile",
+        label: <Link to="/profile">Profile</Link>,
+      },
+    ];
+
+    if (role?.includes(Roles.ADMIN) || role?.includes(Roles.MODERATOR)) {
+      items.push({
+        key: "users",
+        label: <Link to="/users">Users</Link>,
+      });
+    }
+
+    return items;
+  }, [role]);
+
+  const selectedKeys = useMemo(() => {
+    const path = location.pathname;
+    return menuItems.some((item) => item?.key === path) ? [path] : [];
+  }, [location.pathname, menuItems]);
+
+  return (
+    <Menu
+      items={menuItems}
+      mode="vertical"
+      selectedKeys={selectedKeys}
+      defaultSelectedKeys={["/todo"]}
+      className="main-navigation-menu"
+      style={{
+        border: "1px solid #f0f0f0",
+        padding: "10px",
+        borderRadius: "5px",
+        backgroundColor: "#f0f0f0",
+        width: 200,
+        float: "left",
+      }}
+    />
+  );
+});
 
 export default MainLayout;

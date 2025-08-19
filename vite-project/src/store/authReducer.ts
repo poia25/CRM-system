@@ -24,7 +24,7 @@ const initialState: AuthState = {
   },
   profileData: {
     profile: null,
-    isLoading: null,
+    isLoading: true,
     error: null,
   },
 };

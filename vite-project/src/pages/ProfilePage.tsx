@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ProfileRequest } from "../types/user.ts";
 import { getUpdateProfile, logoutUser } from "../store/actionCreators";
 import { useSelector } from "react-redux";
@@ -18,9 +18,33 @@ export const ProfilePage = () => {
   );
   const [isEdit, setIsEdit] = useState(false);
   const [form] = Form.useForm();
+  const isFetchingRef = useRef(false);
+
+  useEffect(() => {
+    if (!isLogin) return;
+
+    const loadProfileData = async () => {
+      if (isFetchingRef.current) return;
+
+      try {
+        isFetchingRef.current = true;
+        const res = await loadProfile();
+        if (res) {
+          dispatch(loadProfileSuccess(res as BaseUser));
+        }
+      } finally {
+        isFetchingRef.current = false;
+      }
+    };
+
+    loadProfileData();
+
+    const interval = setInterval(loadProfileData, 15000);
+
+    return () => clearInterval(interval);
+  }, [isLogin, dispatch]);
 
   const onFinishHandler = (values: ProfileRequest) => {
-    console.log(values);
     if (
       values.email === profile?.email ||
       values.username === profile?.username
@@ -40,21 +64,6 @@ export const ProfilePage = () => {
     setIsEdit(false);
     form.resetFields();
   };
-
-  useEffect(() => {
-    const loadProfileProg = async () => {
-      loadProfile();
-      let res = await loadProfile();
-      if (res) {
-        dispatch(loadProfileSuccess(res as BaseUser));
-      }
-    };
-    loadProfileProg();
-    const interval = setInterval(() => {
-      loadProfileProg();
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [isLogin]);
 
   return (
     <>

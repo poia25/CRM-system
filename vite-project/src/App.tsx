@@ -1,48 +1,80 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import ProfilePage from "./pages/ProfilePage.tsx";
-import TodoPage from "./pages/TodoListPage.tsx";
-import MainLayout from "./layouts/MainLayout.tsx";
-import LogIn from "./pages/LogIn.tsx";
-import SignUpPage from "./pages/SignUpPage.tsx";
-import { AuthLayout } from "./layouts/AuthLayouts.tsx";
-import { RootState } from "./store/store.ts";
-import { useSelector } from "react-redux";
-import { Spin } from "antd";
-import { UserPage } from "./pages/UserPage.tsx";
-import UserProfilePage from "./pages/UserProfilePage.tsx";
-import AdminRoute from "./layouts/AdminLayout.tsx";
+import {  createBrowserRouter, Navigate, RouterProvider } from "react-router-dom";
+import MainLayout from "./layouts/MainLayout";
+import { PrivateRoute } from "./routes/privateRoute";
+import TodoPage from "./pages/TodoListPage";
+import ProfilePage from "./pages/ProfilePage";
+import { UserPage } from "./pages/UserPage";
+import UserProfilePage from "./pages/UserProfilePage";
+import { AuthLayout } from "./layouts/AuthLayouts";
+import LogIn from "./pages/LogIn";
+import SignUpPage from "./pages/SignUpPage";
+import NotFoundPage from "./pages/NotFoundPage";
+import { App as AntdApp } from "antd";
 
-function App() {
-  const isLoadingAuth = useSelector(
-    (state: RootState) => !!state.auth.authData.isLoading
-  );
-  const isLoadingProfile = useSelector(
-    (state: RootState) => !!state.auth.profileData.isLoading
-  );
-  if (isLoadingAuth || isLoadingProfile === true) {
-    return <Spin spinning fullscreen />;
-  }
+const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <MainLayout />, 
+    children: [
+      {
+        index: true,
+        element: <Navigate to="/todo" replace />, 
+      },
+      {
+        element: <PrivateRoute />, 
+        children: [
+          {
+            path: 'todo',
+            element: <TodoPage />,
+          },
+          {
+            path: 'profile',
+            element: <ProfilePage />,
+          },
+          {
+            path: 'users',
+            children: [
+              {
+                index: true,
+                element: <UserPage />,
+              },
+              {
+                path: ':id',
+                element: <UserProfilePage />,
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  {
+    path: '/auth',
+    element: <AuthLayout />,
+    children: [
+      {
+        index: true,
+        element: <LogIn />,
+      },
+      {
+        path: 'register',
+        element: <SignUpPage />,
+      },
+    ],
+  },
+  {
+    path: '*',
+    element: <NotFoundPage />, 
+  },
+]);
 
-  return (
-    <>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<MainLayout />}>
-            <Route path="todo" element={<TodoPage />} />
-            <Route path="profile" element={<ProfilePage />} />
-            <Route element={<AdminRoute />}>
-              <Route path="users" element={<UserPage />} />
-              <Route path="users/:id" element={<UserProfilePage />} />
-            </Route>
-          </Route>
-          <Route path="/auth" element={<AuthLayout />}>
-            <Route index element={<LogIn />} />
-            <Route path="register" element={<SignUpPage />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
-    </>
-  );
-}
+
+export const App = () => (
+  <>
+   <AntdApp>
+      <RouterProvider router={router} />
+    </AntdApp>
+  </>
+);
 
 export default App;

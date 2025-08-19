@@ -1,6 +1,11 @@
 import { Flex, Image } from "antd";
-import { Outlet } from "react-router-dom";
+import { Navigate, Outlet } from "react-router-dom";
 import leftImage from "../assets/illustration.svg";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "../store/store";
+import { useEffect } from "react";
+import { getProfile } from "../store/actionCreators";
+import { UnknownAction } from "@reduxjs/toolkit";
 
 const container: React.CSSProperties = {
   height: "100vh",
@@ -14,7 +19,26 @@ const rightColumnStyle: React.CSSProperties = {
   width: "46%",
 };
 
+
 export const AuthLayout = () => {
+  const isLogin = useSelector(
+    (state: RootState) => state.auth.authData.isAuthorizated
+  );
+  const dispatch = useDispatch()
+
+  useEffect(() => {
+    if(isLogin){
+      dispatch(getProfile() as unknown as UnknownAction);
+    }
+  })
+
+  const lastUsl = localStorage.getItem('lastPath')
+
+  if (isLogin) {
+    const redirectPath = lastUsl || '/todo';
+    return <Navigate to={redirectPath} replace />;
+  }
+
   return (
     <Flex style={container}>
       <Flex style={leftColumnStyle} vertical align="center" justify="center">

@@ -13,6 +13,7 @@ import { loadProfile, login, logout, updateProfile } from "../api/auth";
 import TokenService from "../services/tokenServices";
 import { BaseUser } from "../types/admin";
 
+
 export const loginUser = (data: AuthData) => {
   return async (dispatch: Dispatch): Promise<void> => {
     try {

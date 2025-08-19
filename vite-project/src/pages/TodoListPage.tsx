@@ -4,6 +4,7 @@ import { fetchTodos } from "../api/api.ts";
 import TodoForm from "../components/Form/TodoForm.tsx";
 import Tabs from "../components/Tab/Tabs.tsx";
 import TodoList from "../components/List/TodoList.tsx";
+import { loadProfile } from "../api/auth.ts";
 
 function TodoPage() {
   const [data, setData] = useState<Todo[]>([]);
@@ -32,6 +33,7 @@ function TodoPage() {
 
   useEffect(() => {
     loadTodos();
+    loadProfile()
     const interval = setInterval(() => {
       loadTodos();
     }, 5000);

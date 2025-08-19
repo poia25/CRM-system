@@ -1,24 +1,27 @@
 import { Button, Form, Input } from "antd";
 import { useEffect, useState } from "react";
 import { Params, useNavigate, useParams } from "react-router";
-import { retrieveUserProfile, updateUserProfile } from "../api/auth";
-import { Roles } from "../types/admin";
+import {
+  retrieveUserProfile,
+  updateUserProfile,
+} from "../api/auth";
+// import { Roles } from "../types/admin";
 import { ProfileRequest } from "../types/user";
 
-interface DataType {
-  id: number;
-  username: string;
-  email: string;
-  date: string; // ISO date string
-  isBlocked: boolean;
-  roles: Roles[];
-  phoneNumber: string;
-}
+// interface DataType {
+//   id: number;
+//   username: string;
+//   email: string;
+//   date: string; // ISO date string
+//   isBlocked: boolean;
+//   roles: Roles[];
+//   phoneNumber: string;
+// }
 
 export const UserProfilePage = () => {
   const { id } = useParams<Params>();
   const navigate = useNavigate();
-  const [user, setUser] = useState<DataType | null>(null);
+  const [user, setUser] = useState<ProfileRequest | null>(null);
   const [isEdit, setIsEdit] = useState(false);
   const [form] = Form.useForm();
 
@@ -32,17 +35,18 @@ export const UserProfilePage = () => {
     getUserData();
   }, [id]);
 
-  console.log(user);
 
-  const onFinishHandler = (values: ProfileRequest) => {
-    if (values.email === user?.email || values.username === user?.username) {
+  const onFinishHandler = async (values: ProfileRequest) => {
+    if (values.email === user?.email && values.username === user?.username) {
       setIsEdit(false);
       form.resetFields();
       return;
     }
     try {
-      if (user) {
-        updateUserProfile(user.id, values);
+      if (user && id) {
+        let newId = +id
+        const updateUser = await updateUserProfile(newId, values);
+        setUser(updateUser)
         setIsEdit(false);
         form.resetFields();
       }
@@ -55,6 +59,15 @@ export const UserProfilePage = () => {
     form.resetFields();
   };
 
+  const handleBackUser = () => {
+    navigate(-1);
+  };
+
+  const userPhoneNumber = () => {
+    if(user?.phoneNumber){
+      return user?.phoneNumber.slice(1)
+    }
+  }
   return (
     <>
       {isEdit ? (
@@ -121,11 +134,11 @@ export const UserProfilePage = () => {
           <ul style={{ listStyle: "none", padding: 10 }}>
             <li>Имя полььзователя: {user?.username}</li>
             <li>Почтовый адрес: {user?.email}</li>
-            <li>Телефон:+7{user?.phoneNumber.slice(1)}</li>
+            <li>Телефон:+7{userPhoneNumber()}</li>
           </ul>
           <Button onClick={() => setIsEdit(true)}>Редактировать</Button>
           <Button onClick={() => navigate("/users")}>Сохранить</Button>
-          <Button onClick={() => navigate("/users")}>Вернуться</Button>
+          <Button onClick={handleBackUser}>Вернуться</Button>
         </>
       )}
     </>

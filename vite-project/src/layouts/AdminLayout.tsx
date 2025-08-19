@@ -7,7 +7,6 @@ const AdminRoute = () => {
   const user: BaseUser | null = useSelector(
     (state: RootState) => state.auth.profileData.profile
   );
-  console.log(user);
   if (!user?.roles.includes(Roles.ADMIN)) {
     return <Navigate to="/" replace />;
   }

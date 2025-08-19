@@ -1,10 +1,9 @@
 import { Flex, Form, Input, Button, Space, message } from "antd";
 import { Typography } from "antd";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { AuthData } from "../types/user";
-import { RootState, useAppDispatch } from "../store/store";
+import { useAppDispatch } from "../store/store";
 import { loginUser } from "../store/actionCreators";
-import { useSelector } from "react-redux";
 
 const { Title } = Typography;
 
@@ -12,22 +11,19 @@ export const LogIn: React.FC = () => {
   const [form] = Form.useForm();
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  
 
   const onFinishHandleLogin = async (values: AuthData) => {
     try {
       await dispatch(loginUser(values));
-      navigate("/todo");
+       navigate('/todo');
     } catch (error) {
-    message.error("Неверный Логин или Пароль")
+      message.error("Неверный Логин или Пароль");
       throw error;
     }
   };
 
-  const isLogin = useSelector((state: RootState) => state.auth.authData.isAuthorizated);
-
-  return isLogin ? (
-    <Navigate to="/todo" replace />
-  ) : (
+  return (
     <>
       <Flex gap="large" align="center" style={{ width: "100%" }}>
         <Flex style={{ margin: "0 auto" }}>
@@ -58,11 +54,7 @@ export const LogIn: React.FC = () => {
               <Input type="password" placeholder="***********" />
             </Form.Item>
             <Form.Item>
-              <Button
-                block
-                type="primary"
-                htmlType="submit"
-              >
+              <Button block type="primary" htmlType="submit">
                 Log in
               </Button>
             </Form.Item>

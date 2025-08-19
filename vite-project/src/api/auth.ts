@@ -10,7 +10,7 @@ import TokenService from "../services/tokenServices";
 import { getProfile, logoutUser } from "../store/actionCreators";
 import { store } from "../store/store";
 import { loginSucces, logoutSucces } from "../store/authReducer";
-import { UserRolesRequest } from "../types/admin";
+import { BaseUser, UserRolesRequest } from "../types/admin";
 
 export const axiosInstancePublic = axios.create({
   baseURL: "https://easydev.club/api/v1",
@@ -27,7 +27,6 @@ export const axiosInstance = axios.create({
 
 axiosInstance.interceptors.request.use((config) => {
   const token = TokenService.getToken();
-  console.log(token);
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -38,17 +37,19 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    if (error.response.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
+    if (error.response?.status === 401 && !TokenService.getIsRetry()) {
+      TokenService.setIsRetry()
       try {
         const refreshToken = TokenService.getRefreshToken();
 
         if (refreshToken) {
           promiseRefreshToken();
           store.dispatch(getProfile());
+          TokenService.unsetIsRetry()
         } else {
           localStorage.clear();
           TokenService.deleteToken();
+          TokenService.unsetIsRetry()
           store.dispatch(logoutSucces());
           window.location.href = "/auth";
         }
@@ -92,7 +93,7 @@ export const login = async (userLog: AuthData): Promise<Token> => {
   const response = await axiosInstance.post(`/auth/signin`, userLog);
   return response.data;
 };
-export const loadProfile = async (): Promise<Profile | null> => {
+export const loadProfile = async (): Promise<BaseUser | null> => {
   try {
     const response = await axiosInstance.get(`/user/profile`);
     return response.data;
@@ -138,28 +139,28 @@ interface filterProps {
   limit: number;
   offset: number;
 }
+
 export const TEST = async (filter: filterProps) => {
-  const response = await axiosInstance.get(
-    `/admin/users?search=${filter.search}&sortBy=${filter.sortBy}&sortOrder=${filter.sortOrder}&isBlocked=${filter.isBlocked}&limit=${filter.limit}&offset=${filter.offset}`
-  );
+  const queryParams: Record<string, string> = {};
+  
+  if (filter.search) queryParams.search = filter.search;
+  if (filter.sortBy) queryParams.sortBy = filter.sortBy;
+  if (filter.sortOrder) queryParams.sortOrder = filter.sortOrder;
+  if (filter.isBlocked !== null && filter.isBlocked !== undefined) {
+    queryParams.isBlocked = String(filter.isBlocked);
+  }
+  if (filter.limit) queryParams.limit = String(filter.limit);
+  if (filter.offset) queryParams.offset = String(filter.offset);
+  
+  const queryString = new URLSearchParams(queryParams).toString();
+  const response = await axiosInstance.get(`/admin/users?${queryString}`);
   return response;
 };
-// export const getFilterUsersProfile = async (filter: filterProps) => {
-//   if (filter.search) {
-//     const response = await axiosInstance.get(
-//       `/admin/users?search=${filter.search}`
-//     );
-//     return response;
-//   } else if (filter.sortBy || filter.sortOrder) {
-//     const response = await axiosInstance.get(
-//       `/admin/users?sortBy=${filter.sortBy}&sortOrder=${filter.sortOrder}`
-//     );
-//   }
-//   const response = await axiosInstance.get(
-//     `/admin/users?limit=${pageSize}&offset=${current}`
-//   );
-//   return response;
-// };
+
+export const LastApiCall = async (url:string) => {
+  const response = await axios.get(url);
+  return response 
+}
 
 export const retrieveUserProfile = async (id: number) => {
   const response = await axiosInstance.get(`/admin/users/${id}`);
@@ -193,10 +194,7 @@ export const updateUserRoles = async (
   values: UserRolesRequest
 ): Promise<ProfileRequest> => {
   try {
-    const response = await axiosInstance.post(
-      `/admin/users/${id}/rights`,
-      values
-    );
+    const response = await axiosInstance.post(`/admin/users/${id}/rights`, values);
     return response.data;
   } catch (error) {
     console.log("Неполучилось обновить пользователя");
