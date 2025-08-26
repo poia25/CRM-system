@@ -1,22 +1,8 @@
-import { Button, Form, Input } from "antd";
-import { useEffect, useState } from "react";
+import { Button, Form, Input, message } from "antd";
+import { useEffect, useRef, useState } from "react";
 import { Params, useNavigate, useParams } from "react-router";
-import {
-  retrieveUserProfile,
-  updateUserProfile,
-} from "../api/auth";
-// import { Roles } from "../types/admin";
+import { retrieveUserProfile, updateUserProfile } from "../api/auth";
 import { ProfileRequest } from "../types/user";
-
-// interface DataType {
-//   id: number;
-//   username: string;
-//   email: string;
-//   date: string; // ISO date string
-//   isBlocked: boolean;
-//   roles: Roles[];
-//   phoneNumber: string;
-// }
 
 export const UserProfilePage = () => {
   const { id } = useParams<Params>();
@@ -24,6 +10,7 @@ export const UserProfilePage = () => {
   const [user, setUser] = useState<ProfileRequest | null>(null);
   const [isEdit, setIsEdit] = useState(false);
   const [form] = Form.useForm();
+  const initialValues = useRef<Partial<ProfileRequest> | null>(null);
 
   const userId = Number(id);
 
@@ -35,25 +22,59 @@ export const UserProfilePage = () => {
     getUserData();
   }, [id]);
 
+  useEffect(() => {
+    if (user) {
+      initialValues.current = { ...user };
+      form.setFieldsValue(user);
+    }
+  }, [user, form]);
 
-  const onFinishHandler = async (values: ProfileRequest) => {
-    if (values.email === user?.email && values.username === user?.username) {
-      setIsEdit(false);
-      form.resetFields();
+  const getChangedProfileFields = (
+    original: Partial<ProfileRequest>,
+    current: Partial<ProfileRequest>
+  ): Partial<ProfileRequest> => {
+    const changes: Partial<ProfileRequest> = {};
+
+    const keys: Array<keyof ProfileRequest> = [
+      "username",
+      "email",
+      "phoneNumber",
+    ];
+
+    keys.forEach((key) => {
+      if (current[key] !== original[key]) {
+        changes[key] = current[key];
+      }
+    });
+
+    return changes;
+  };
+
+  const onFinishHandler = async (values: Partial<ProfileRequest>) => {
+    if (!initialValues.current) {
+      message.error("Данные пользователя не загружены");
       return;
     }
+
+    const changedData = getChangedProfileFields(initialValues.current, values);
+    console.log("Changed data:", changedData);
+
+    if (Object.keys(changedData).length === 0) {
+      message.info("Нет изменений для сохранения");
+      return;
+    }
+
     try {
-      if (user && id) {
-        let newId = +id
-        const updateUser = await updateUserProfile(newId, values);
-        setUser(updateUser)
-        setIsEdit(false);
-        form.resetFields();
-      }
-    } catch {
-      console.log("ОШИБКА ПУТ ЗАПРОСА");
+      const updateUser = await updateUserProfile(userId, changedData);
+      setUser(updateUser);
+      initialValues.current = { ...updateUser };
+      setIsEdit(false);
+      message.success("Данные успешно обновлены");
+    } catch (error) {
+      message.error("Ошибка при обновлении данных");
     }
   };
+
   const handleCloseEditing = () => {
     setIsEdit(false);
     form.resetFields();
@@ -64,19 +85,15 @@ export const UserProfilePage = () => {
   };
 
   const userPhoneNumber = () => {
-    if(user?.phoneNumber){
-      return user?.phoneNumber.slice(1)
+    if (user?.phoneNumber) {
+      return user?.phoneNumber.slice(1);
     }
-  }
+  };
   return (
     <>
       {isEdit ? (
         <Form
-          initialValues={{
-            username: user?.username,
-            email: user?.email,
-            phoneNumber: user?.phoneNumber,
-          }}
+          initialValues={initialValues}
           onFinish={onFinishHandler}
           form={form}
         >

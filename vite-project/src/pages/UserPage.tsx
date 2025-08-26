@@ -4,19 +4,14 @@ import {
   Input,
   Modal,
   Pagination,
+  Space,
   Table,
   TablePaginationConfig,
   TableProps,
   Tag,
 } from "antd";
-import { BaseUser, Roles, UserRolesRequest } from "../types/admin";
-import {
-  blockUser,
-  deleteUser,
-  TEST,
-  unLockUser,
-  updateUserRoles,
-} from "../api/auth";
+import { BaseUser } from "../types/admin";
+import { blockUser, deleteUser, TEST, unLockUser } from "../api/auth";
 import {
   ExclamationCircleFilled,
   MailOutlined,
@@ -24,6 +19,7 @@ import {
 } from "@ant-design/icons";
 import { useNavigate } from "react-router";
 import { ColumnType } from "antd/es/table";
+import UserRolesModal from "../components/Modal/UserRolesModal";
 
 interface FilterType {
   search: string;
@@ -56,7 +52,6 @@ export const UserPage = () => {
   });
   const navigate = useNavigate();
   const { confirm } = Modal;
-
 
   const filtersRef = useRef(filters);
   const loadingRef = useRef(false);
@@ -138,25 +133,6 @@ export const UserPage = () => {
       await blockUser(id);
       loadData();
     }
-  };
-
-  const handleEditUserRolesAdmin = async (id: number, _data: BaseUser) => {
-    const request: UserRolesRequest = { roles: [Roles.ADMIN] };
-
-    await updateUserRoles(id, request);
-    loadData();
-  };
-  const handleEditUserRolesModerator = async (id: number, _data: BaseUser) => {
-    const request: UserRolesRequest = { roles: [Roles.MODERATOR] };
-
-    await updateUserRoles(id, request);
-    loadData();
-  };
-  const handleEditUserRolesUser = async (id: number, _data: BaseUser) => {
-    const request: UserRolesRequest = { roles: [Roles.USER] };
-
-    await updateUserRoles(id, request);
-    loadData();
   };
 
   const handleDeleteUser = async (id: number) => {
@@ -261,11 +237,29 @@ export const UserPage = () => {
       title: "Блокировка",
       dataIndex: "isBlocked",
       key: "isBlocked",
-      sorter: true,
-      sortDirections: ["ascend", "descend"], // Не включаем undefined явно
-      defaultSortOrder: null, // Явное указание
+      filters: [
+        {
+          text: "Active",
+          value: false,
+        },
+        {
+          text: "Blocked",
+          value: true,
+        },
+      ],
+      filterMultiple: false,
+      onFilter: (value, record) => {
+        if (value === null) return true;
+        return record.isBlocked === value;
+      },
       render: (value) =>
-        value === true ? "Blocked" : value === false ? "Active" : "Any",
+        value === true ? (
+          <Tag color="red">Blocked</Tag>
+        ) : value === false ? (
+          <Tag color="green">Active</Tag>
+        ) : (
+          "Any"
+        ),
     },
     {
       title: "Дата регистр",
@@ -301,30 +295,9 @@ export const UserPage = () => {
           >
             {record.isBlocked ? "разблок" : "блок"}
           </Button>
-          <Button
-            type="default"
-            onClick={() => {
-              handleEditUserRolesAdmin(record.id, record);
-            }}
-          >
-            Дать Админку
-          </Button>
-          <Button
-            type="default"
-            onClick={() => {
-              handleEditUserRolesModerator(record.id, record);
-            }}
-          >
-            Дать Модер
-          </Button>
-          <Button
-            type="default"
-            onClick={() => {
-              handleEditUserRolesUser(record.id, record);
-            }}
-          >
-            Забрать роли
-          </Button>
+          <Space>
+            <UserRolesModal user={record} onSuccess={loadData} />
+          </Space>
           <Button
             type="default"
             danger
