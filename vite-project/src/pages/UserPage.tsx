@@ -229,8 +229,14 @@ export const UserPage = () => {
       title: "Роли",
       dataIndex: "roles",
       key: "roles",
-      render: (roles: "USER" | "ADMIN" | "MODERATOR") => (
-        <Tag color={roleColors[roles]}>{roles}</Tag>
+      render: (roles: string[]) => (
+        <Space size={[0, 8]} wrap>
+          {roles?.map((role) => (
+            <Tag key={role} color={roleColors[role as keyof typeof roleColors]}>
+              {role}
+            </Tag>
+          ))}
+        </Space>
       ),
     },
     {
