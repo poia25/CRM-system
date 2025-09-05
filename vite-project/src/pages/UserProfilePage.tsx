@@ -8,7 +8,7 @@ export const UserProfilePage = () => {
   const { id } = useParams<Params>();
   const navigate = useNavigate();
   const [user, setUser] = useState<ProfileRequest | null>(null);
-  const [isEdit, setIsEdit] = useState(false);
+  const [isEdit, setIsEdit] = useState<boolean>(false);
   const [form] = Form.useForm();
   const initialValues = useRef<Partial<ProfileRequest> | null>(null);
 

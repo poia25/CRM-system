@@ -10,7 +10,7 @@ import TokenService from "../services/tokenServices";
 import { getProfile, logoutUser } from "../store/actionCreators";
 import { store } from "../store/store";
 import { loginSucces, logoutSucces } from "../store/authReducer";
-import { BaseUser, UserRolesRequest } from "../types/admin";
+import { BaseUser, FilterType, UserRolesRequest } from "../types/admin";
 
 export const axiosInstancePublic = axios.create({
   baseURL: "https://easydev.club/api/v1",
@@ -37,24 +37,22 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    if (error.response?.status === 401 && !TokenService.getIsRetry()) {
-      TokenService.setIsRetry()
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
       try {
         const refreshToken = TokenService.getRefreshToken();
 
         if (refreshToken) {
           promiseRefreshToken();
           store.dispatch(getProfile());
-          TokenService.unsetIsRetry()
+          return axiosInstance(originalRequest);
         } else {
           localStorage.clear();
           TokenService.deleteToken();
-          TokenService.unsetIsRetry()
           store.dispatch(logoutSucces());
           window.location.href = "/auth";
+          return Promise.reject(error);
         }
-
-        return axiosInstance(originalRequest);
       } catch (refreshError) {
         console.log("Token refresh failed:", refreshError);
         console.log("EXIT");
@@ -131,36 +129,34 @@ export const getUsersProfile = async (pageSize: number, current: number) => {
   return response;
 };
 
-interface filterProps {
-  search: string;
-  sortBy: string | null;
-  sortOrder: string | null;
-  isBlocked: boolean | null;
-  limit: number;
-  offset: number;
-}
-
-export const TEST = async (filter: filterProps) => {
+export const getFilterData = async (filter: FilterType) => {
   const queryParams: Record<string, string> = {};
-  
-  if (filter.search) queryParams.search = filter.search;
-  if (filter.sortBy) queryParams.sortBy = filter.sortBy;
-  if (filter.sortOrder) queryParams.sortOrder = filter.sortOrder;
+  const stringKeys: Array<keyof FilterType> = [
+    "search",
+    "sortBy",
+    "sortOrder",
+    "limit",
+    "offset",
+  ];
+
+  stringKeys.forEach((key) => {
+    if (filter[key]) {
+      queryParams[key] = String(filter[key]);
+    }
+  });
   if (filter.isBlocked !== null && filter.isBlocked !== undefined) {
     queryParams.isBlocked = String(filter.isBlocked);
   }
-  if (filter.limit) queryParams.limit = String(filter.limit);
-  if (filter.offset) queryParams.offset = String(filter.offset);
-  
+
   const queryString = new URLSearchParams(queryParams).toString();
   const response = await axiosInstance.get(`/admin/users?${queryString}`);
   return response;
 };
 
-export const LastApiCall = async (url:string) => {
+export const getApiData = async (url: string) => {
   const response = await axios.get(url);
-  return response 
-}
+  return response;
+};
 
 export const retrieveUserProfile = async (id: number) => {
   const response = await axiosInstance.get(`/admin/users/${id}`);
@@ -194,7 +190,10 @@ export const updateUserRoles = async (
   values: UserRolesRequest
 ): Promise<ProfileRequest> => {
   try {
-    const response = await axiosInstance.post(`/admin/users/${id}/rights`, values);
+    const response = await axiosInstance.post(
+      `/admin/users/${id}/rights`,
+      values
+    );
     return response.data;
   } catch (error) {
     console.log("Неполучилось обновить пользователя");

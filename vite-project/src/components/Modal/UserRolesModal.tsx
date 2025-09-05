@@ -1,23 +1,22 @@
-import React, { useState } from 'react';
-import { Modal, Button, Checkbox, Space, message } from 'antd';
-import { BaseUser, Roles, UserRolesRequest } from '../../types/admin';
-import { updateUserRoles } from '../../api/auth';
+import React, { useState } from "react";
+import { Modal, Button, Checkbox, Space, message } from "antd";
+import { BaseUser, Roles, UserRolesRequest } from "../../types/admin";
+import { updateUserRoles } from "../../api/auth";
 
 interface Props {
   user: BaseUser;
   onSuccess?: () => void;
 }
-type CheckboxValueType = string | number | boolean;
 
 const UserRolesModal: React.FC<Props> = ({ user, onSuccess }) => {
-  const [visible, setVisible] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [visible, setVisible] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
   const [selectedRoles, setSelectedRoles] = useState<Roles[]>(user.roles || []);
 
   const roleOptions = [
-    { label: 'Пользователь', value: Roles.USER },
-    { label: 'Модератор', value: Roles.MODERATOR },
-    { label: 'Администратор', value: Roles.ADMIN },
+    { label: "Пользователь", value: Roles.USER },
+    { label: "Модератор", value: Roles.MODERATOR },
+    { label: "Администратор", value: Roles.ADMIN },
   ];
 
   const handleOpen = () => {
@@ -30,13 +29,13 @@ const UserRolesModal: React.FC<Props> = ({ user, onSuccess }) => {
     setLoading(false);
   };
 
-  const handleRoleChange = (checkedValues: CheckboxValueType[]) => {
-    setSelectedRoles(checkedValues as Roles[]);
+  const handleRoleChange = (checkedValues: Roles[]) => {
+    setSelectedRoles(checkedValues);
   };
 
   const handleSave = async () => {
     if (selectedRoles.length === 0) {
-      message.error('Выберите хотя бы одну роль');
+      message.error("Выберите хотя бы одну роль");
       return;
     }
 
@@ -44,16 +43,16 @@ const UserRolesModal: React.FC<Props> = ({ user, onSuccess }) => {
     try {
       const request: UserRolesRequest = { roles: selectedRoles };
       await updateUserRoles(user.id, request);
-      
-      message.success('Роли успешно обновлены');
+
+      message.success("Роли успешно обновлены");
       setVisible(false);
-      
+
       if (onSuccess) {
         onSuccess();
       }
     } catch (error) {
-      message.error('Ошибка при обновлении ролей');
-      console.error('Error updating roles:', error);
+      message.error("Ошибка при обновлении ролей");
+      console.error("Error updating roles:", error);
     } finally {
       setLoading(false);
     }
@@ -61,9 +60,7 @@ const UserRolesModal: React.FC<Props> = ({ user, onSuccess }) => {
 
   return (
     <>
-      <Button onClick={handleOpen}>
-        Изменить роли
-      </Button>
+      <Button onClick={handleOpen}>Изменить роли</Button>
 
       <Modal
         title={`Изменение ролей пользователя: ${user.username || user.email}`}
@@ -83,15 +80,15 @@ const UserRolesModal: React.FC<Props> = ({ user, onSuccess }) => {
           </Button>,
         ]}
       >
-        <Space direction="vertical" style={{ width: '100%' }}>
+        <Space direction="vertical" style={{ width: "100%" }}>
           <Checkbox.Group
             options={roleOptions}
             value={selectedRoles}
             onChange={handleRoleChange}
           />
-          
+
           {selectedRoles.length === 0 && (
-            <div style={{ color: '#ff4d4f', fontSize: '12px' }}>
+            <div style={{ color: "#ff4d4f", fontSize: "12px" }}>
               Пользователь без ролей не сможет войти в систему
             </div>
           )}

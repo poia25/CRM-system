@@ -6,7 +6,6 @@ import { RootState, useAppDispatch } from "../store/store";
 import { Button, Form, Input } from "antd";
 import { loadProfile } from "../api/auth.ts";
 import { loadProfileSuccess } from "../store/authReducer.ts";
-import { BaseUser } from "../types/admin.ts";
 
 export const ProfilePage = () => {
   const dispatch = useAppDispatch();
@@ -16,21 +15,25 @@ export const ProfilePage = () => {
   const isLogin = useSelector(
     (state: RootState) => state.auth.authData.isAuthorizated
   );
-  const [isEdit, setIsEdit] = useState(false);
+  const [isEdit, setIsEdit] = useState<boolean>(false);
   const [form] = Form.useForm();
   const isFetchingRef = useRef(false);
 
   useEffect(() => {
-    if (!isLogin) return;
+    if (!isLogin) {
+      return;
+    }
 
     const loadProfileData = async () => {
-      if (isFetchingRef.current) return;
+      if (isFetchingRef.current) {
+        return;
+      }
 
       try {
         isFetchingRef.current = true;
         const res = await loadProfile();
         if (res) {
-          dispatch(loadProfileSuccess(res as BaseUser));
+          dispatch(loadProfileSuccess(res));
         }
       } finally {
         isFetchingRef.current = false;

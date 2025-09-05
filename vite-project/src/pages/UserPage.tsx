@@ -6,12 +6,11 @@ import {
   Pagination,
   Space,
   Table,
-  TablePaginationConfig,
   TableProps,
   Tag,
 } from "antd";
 import { BaseUser } from "../types/admin";
-import { blockUser, deleteUser, TEST, unLockUser } from "../api/auth";
+import { blockUser, deleteUser, getFilterData, unLockUser } from "../api/auth";
 import {
   ExclamationCircleFilled,
   MailOutlined,
@@ -20,38 +19,17 @@ import {
 import { useNavigate } from "react-router";
 import { ColumnType } from "antd/es/table";
 import UserRolesModal from "../components/Modal/UserRolesModal";
-
-interface FilterType {
-  search: string;
-  sortBy: string | null;
-  sortOrder: string | null;
-  isBlocked: boolean | null;
-  limit: number;
-  offset: number;
-}
+import { AppDispatch, useAppDispatch } from "../store/store";
+import { useFilters } from "../components/hooks/useFilters";
+import { SorterResult, SortOrder } from "antd/es/table/interface";
+import { setLimit, setPagination } from "../store/authReducer";
 
 export const UserPage = () => {
-  const [_loading, setLoading] = useState(false);
   const [data, setData] = useState<BaseUser[]>([]);
-  const [filters, setFilters] = useState<FilterType>({
-    search: "",
-    sortBy: "id",
-    sortOrder: "asc",
-    isBlocked: null,
-    limit: 20,
-    offset: 0,
-  });
-  const [tableParams, setTableParams] = useState<{
-    pagination: TablePaginationConfig;
-  }>({
-    pagination: {
-      current: 1,
-      pageSize: 20,
-      total: 0,
-    },
-  });
+  const { filters, setSearch, setSort, totalAmount } = useFilters();
   const navigate = useNavigate();
   const { confirm } = Modal;
+  const dispatch: AppDispatch = useAppDispatch();
 
   const filtersRef = useRef(filters);
   const loadingRef = useRef(false);
@@ -68,46 +46,28 @@ export const UserPage = () => {
 
   useEffect(() => {
     loadData();
-  }, [tableParams.pagination.current, tableParams.pagination.pageSize]);
+  }, [filters.limit, filters.offset]);
 
   const loadData = async () => {
     if (loadingRef.current) return;
 
     loadingRef.current = true;
-    setLoading(true);
 
     try {
-      const response = await TEST(filtersRef.current);
+      const response = await getFilterData(filtersRef.current);
       setData(response.data.data);
-      setTableParams({
-        ...tableParams,
-        pagination: {
-          ...tableParams.pagination,
-          total: response.data.meta.totalAmount,
-        },
-      });
+      dispatch(setLimit(response.data.meta.totalAmount));
     } catch (error) {
       console.error("Ошибка при загрузке данных", error);
     } finally {
       loadingRef.current = false;
-      setLoading(false);
     }
   };
 
   const handleTableChange = (page: number, pageSize?: number) => {
-    setTableParams({
-      pagination: {
-        ...tableParams.pagination,
-        current: page,
-        pageSize: pageSize || tableParams.pagination.pageSize,
-      },
-    });
-    if (pageSize)
-      setFilters((prevFilters) => ({
-        ...prevFilters,
-        limit: pageSize,
-        offset: page,
-      }));
+    if (pageSize) {
+      dispatch(setPagination({ limit: pageSize, offset: page }));
+    }
   };
 
   const roleColors = {
@@ -122,7 +82,7 @@ export const UserPage = () => {
 
   const handleSearch = async (e: ChangeEvent<HTMLInputElement>) => {
     const newSearchValue: string = e.target.value;
-    setFilters((prevFilters) => ({ ...prevFilters, search: newSearchValue }));
+    setSearch(newSearchValue);
   };
 
   const handleEditBLocked = async (id: number, isBlocked: boolean) => {
@@ -157,37 +117,24 @@ export const UserPage = () => {
   const handleSorterTableChange: TableProps<BaseUser>["onChange"] = (
     _pagination,
     _filters,
-    sorter
+    sorter: SorterResult<BaseUser> | SorterResult<BaseUser>[]
   ) => {
-    if ("field" in sorter)
-      setFilters((prev) => {
-        const newState = { ...prev };
+    const sorters = Array.isArray(sorter) ? sorter : [sorter];
 
-        // Если это сброс сортировки (все поля undefined)
-        if (!sorter.field && !sorter.order) {
-          return {
-            ...newState,
-            sortBy: null,
-            sortOrder: null,
-            isBlocked: null, // Явно устанавливаем null при сбросе
-          };
-        }
+    const activeSorter = sorters.find((item) => item.order);
 
-        // Если сортировка по isBlocked
-        if (sorter.field === "isBlocked") {
-          newState.isBlocked = sorter.order === "ascend" ? true : false;
-        }
-
-        // Общие параметры сортировки
-        newState.sortBy = sorter.field ? String(sorter.field) : prev.sortBy;
-        newState.sortOrder = sorter.order
-          ? sorter.order === "ascend"
-            ? "asc"
-            : "desc"
-          : null;
-
-        return newState;
-      });
+    if (
+      activeSorter?.field &&
+      typeof activeSorter.field === "string" &&
+      activeSorter.order &&
+      (activeSorter.order === "ascend" || activeSorter.order === "descend")
+    ) {
+      const sortOrder = activeSorter.order === "ascend" ? "asc" : "desc";
+      console.log(sortOrder);
+      setSort(activeSorter.field as "asc" | "desc", sortOrder);
+    } else {
+      setSort("id", null);
+    }
   };
 
   const columns: ColumnType<BaseUser>[] = [
@@ -201,6 +148,12 @@ export const UserPage = () => {
         </div>
       ),
       sorter: true,
+      sortOrder:
+        filters.sortBy === "username"
+          ? filters.sortOrder === "asc"
+            ? "ascend"
+            : ("descend" as SortOrder)
+          : undefined,
     },
     {
       title: "Email",
@@ -213,6 +166,12 @@ export const UserPage = () => {
         </a>
       ),
       sorter: true,
+      sortOrder:
+        filters.sortBy === "email"
+          ? filters.sortOrder === "asc"
+            ? "ascend"
+            : ("descend" as SortOrder)
+          : undefined,
     },
     {
       title: "Телефон",
@@ -331,6 +290,7 @@ export const UserPage = () => {
 
       <Table
         columns={columns}
+        key={`table-${filters.sortBy}-${filters.sortOrder}`}
         dataSource={data}
         pagination={false}
         rowKey="id"
@@ -340,9 +300,9 @@ export const UserPage = () => {
       />
       <Pagination
         style={{ marginTop: 16, textAlign: "center" }}
-        current={tableParams.pagination.current}
-        pageSize={tableParams.pagination.pageSize}
-        total={tableParams.pagination.total}
+        current={filters.limit}
+        pageSize={filters.offset}
+        total={totalAmount}
         onChange={handleTableChange}
         showSizeChanger
         pageSizeOptions={["10", "20", "50"]}
