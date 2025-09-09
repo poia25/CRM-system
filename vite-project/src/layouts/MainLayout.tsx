@@ -43,6 +43,10 @@ const NavigationMenu = memo(({ role }: { role?: Roles[] }) => {
         label: <Link to="/todo">Todo</Link>,
       },
       {
+        key: "todo1",
+        label: <Link to="/todo">Todo</Link>,
+      },
+      {
         key: "profile",
         label: <Link to="/profile">Profile</Link>,
       },
