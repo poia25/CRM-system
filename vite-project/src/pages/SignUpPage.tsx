@@ -1,4 +1,4 @@
-import { Flex, Form, Input, Button, Typography,message } from "antd";
+import { Flex, Form, Input, Button, Typography, message } from "antd";
 import { userRegistr } from "../api/auth.ts";
 import { UserRegistration } from "../types/user.ts";
 import { useState } from "react";
@@ -9,18 +9,16 @@ export const SignUpPage = () => {
   const [form] = Form.useForm();
 
   const onFinishHandler = async (values: UserRegistration) => {
-    console.log(values)
-    if(values.phoneNumber === ""){
-      values.phoneNumber = "+"
-    } 
-    values.phoneNumber = `+${values.phoneNumber}`
-    console.log(values)
+    if (values.phoneNumber === "") {
+      values.phoneNumber = "+";
+    }
+    values.phoneNumber = `+${values.phoneNumber}`;
+
     try {
-      await userRegistr({ ...values});
-      console.log(values.phoneNumber,values)
+      await userRegistr({ ...values });
       setSuccess(true);
     } catch (error: unknown) {
-      message.error("Такой логин или почта уже существуют!")
+      message.error("Такой логин или почта уже существуют!");
       throw error;
     }
   };

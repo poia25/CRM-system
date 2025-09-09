@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ProfileRequest } from "../types/user.ts";
 import { getUpdateProfile, logoutUser } from "../store/actionCreators";
 import { useSelector } from "react-redux";
@@ -15,16 +15,45 @@ export const ProfilePage = () => {
   const isLogin = useSelector(
     (state: RootState) => state.auth.authData.isAuthorizated
   );
-  const [isEdit, setIsEdit] = useState(false);
+  const [isEdit, setIsEdit] = useState<boolean>(false);
   const [form] = Form.useForm();
-  
+  const isFetchingRef = useRef(false);
+
+  useEffect(() => {
+    if (!isLogin) {
+      return;
+    }
+
+    const loadProfileData = async () => {
+      if (isFetchingRef.current) {
+        return;
+      }
+
+      try {
+        isFetchingRef.current = true;
+        const res = await loadProfile();
+        if (res) {
+          dispatch(loadProfileSuccess(res));
+        }
+      } finally {
+        isFetchingRef.current = false;
+      }
+    };
+
+    loadProfileData();
+
+    const interval = setInterval(loadProfileData, 15000);
+
+    return () => clearInterval(interval);
+  }, [isLogin, dispatch]);
+
   const onFinishHandler = (values: ProfileRequest) => {
     if (
       values.email === profile?.email ||
       values.username === profile?.username
     ) {
       setIsEdit(false);
-      form.resetFields()
+      form.resetFields();
       return;
     }
     try {
@@ -36,19 +65,8 @@ export const ProfilePage = () => {
 
   const handleCloseEditing = () => {
     setIsEdit(false);
-    form.resetFields()
-  }
-
-  useEffect(() => {
-    const loadProfileProg = async () => {
-      loadProfile()
-      let res = await loadProfile();
-      if(res){
-        dispatch(loadProfileSuccess(res));
-      }
-    } 
-    loadProfileProg()
-  }, [isLogin]);
+    form.resetFields();
+  };
 
   return (
     <>
@@ -62,7 +80,6 @@ export const ProfilePage = () => {
           onFinish={onFinishHandler}
           form={form}
         >
-          
           <Form.Item
             name="username"
             label="Имя пользователя"

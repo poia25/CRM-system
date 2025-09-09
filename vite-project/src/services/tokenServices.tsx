@@ -2,14 +2,7 @@ class TokenService {
   static ACCESS_KEY = "accessToken";
   static REFRESH_KEY = "refreshToken";
 
-  static accessToken: string | null = null;
-
-  // static saveToken(token: string) {
-  //   localStorage.setItem(TokenService.ACCESS_KEY, token);
-  // }
-  // static getToken() {
-  //   return localStorage.getItem(TokenService.ACCESS_KEY);
-  // }
+  private static accessToken: string | null = null;
 
   static saveToken(token: string) {
     this.accessToken = token;

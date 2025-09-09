@@ -1,5 +1,5 @@
-import { Dispatch, UnknownAction } from "@reduxjs/toolkit";
-import { AuthData, Profile, ProfileRequest, Token } from "../types/user";
+import { Dispatch } from "@reduxjs/toolkit";
+import { AuthData, ProfileRequest } from "../types/user";
 import {
   loginFailure,
   loginStart,
@@ -11,12 +11,14 @@ import {
 } from "./authReducer";
 import { loadProfile, login, logout, updateProfile } from "../api/auth";
 import TokenService from "../services/tokenServices";
+import { BaseUser } from "../types/admin";
+import { AppDispatch } from "./store";
 
 export const loginUser = (data: AuthData) => {
-  return async (dispatch: Dispatch): Promise<void> => {
+  return async (dispatch: AppDispatch): Promise<void> => {
     try {
       dispatch(loginStart());
-      const res: Token = await login(data);
+      const res = await login(data);
       if (!res || !res.accessToken) {
         throw new Error("Отсутствует токен в ответе сервера");
       }
@@ -24,40 +26,46 @@ export const loginUser = (data: AuthData) => {
       localStorage.setItem("refreshToken", res.refreshToken);
 
       dispatch(loginSucces(res.accessToken));
-      dispatch(getProfile() as unknown as UnknownAction);
-    } catch (error: any) {
-      dispatch(loginFailure(error.message));
-      throw error;
+      dispatch(getProfile());
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        dispatch(loginFailure(error.message));
+        throw error;
+      }
     }
   };
 };
 
 export const getProfile =
   () =>
-  async (dispatch: Dispatch): Promise<void> => {
+  async (dispatch: AppDispatch): Promise<void> => {
     try {
       dispatch(loadProfileStart());
       const res = await loadProfile();
       if (res) {
         dispatch(loadProfileSuccess(res));
       }
-    } catch (error: any) {
-      dispatch(loadProfileFailure(error.message));
-      throw error;
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        dispatch(loadProfileFailure(error.message));
+        throw error;
+      }
     }
   };
 
 export const getUpdateProfile =
   (values: ProfileRequest) =>
-  async (dispatch: Dispatch): Promise<void> => {
+  async (dispatch: AppDispatch): Promise<void> => {
     try {
       dispatch(loadProfileStart());
       const res = await updateProfile(values);
-      dispatch(loadProfileSuccess(res as Profile));
-      dispatch(getProfile() as unknown as UnknownAction);
-    } catch (error: any) {
-      dispatch(loadProfileFailure(error.message));
-      throw error;
+      dispatch(loadProfileSuccess(res as BaseUser));
+      dispatch(getProfile());
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        dispatch(loadProfileFailure(error.message));
+        throw error;
+      }
     }
   };
 
