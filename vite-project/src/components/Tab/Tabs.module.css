@@ -1,0 +1,26 @@
+.tabs {
+  display: flex;
+  justify-content: space-around;
+    margin-bottom: 20px;
+    align-items: center;
+}
+
+.button {
+  background-color: #f1f4f9;
+  border: #ccc;
+  margin: 0 3px;
+  cursor: pointer;
+  font-size: 18px;
+  color: #727272;
+}
+
+.tab {
+  font-weight: normal;
+  border-bottom: none;
+}
+
+.tabActive {
+  font-weight: bold;
+  color: #1b8bd6;
+  border-bottom: 2px solid #1b8bd6;
+}
